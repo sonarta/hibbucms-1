@@ -55,7 +55,7 @@ export default function Index({ pages, filters }: Props) {
 
   const handleSearch = (value: string) => {
     setData('search', value);
-    get(route('pages.index'), {
+    get(route('admin.pages.index'), {
       preserveState: true,
       preserveScroll: true,
     });
@@ -63,7 +63,7 @@ export default function Index({ pages, filters }: Props) {
 
   const handleStatusChange = (value: string) => {
     setData('status', value);
-    get(route('pages.index'), {
+    get(route('admin.pages.index'), {
       preserveState: true,
       preserveScroll: true,
     });
@@ -71,7 +71,7 @@ export default function Index({ pages, filters }: Props) {
 
   const handleDelete = (id: number) => {
     if (confirm('Are you sure you want to delete this page?')) {
-      destroy(route('pages.destroy', id), {
+      destroy(route('admin.pages.destroy', id), {
         onSuccess: () => {
           toast.success('Page deleted successfully');
         },
@@ -80,12 +80,11 @@ export default function Index({ pages, filters }: Props) {
   };
 
   const handlePublish = (id: number, currentStatus: string) => {
-    const routeName = currentStatus === 'draft' ? 'pages.publish' : 'pages.unpublish';
+    const routeName = currentStatus === 'draft' ? 'admin.pages.publish' : 'admin.pages.unpublish';
     router.post(route(routeName, id), {}, {
       onSuccess: () => {
         toast.success(
-          `Page successfully ${
-            currentStatus === 'draft' ? 'published' : 'drafted'
+          `Page successfully ${currentStatus === 'draft' ? 'published' : 'drafted'
           }`
         );
       },
@@ -98,15 +97,15 @@ export default function Index({ pages, filters }: Props) {
 
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-            <div>
+          <div>
             <h1 className="text-2xl font-bold">Pages</h1>
             <p className="text-muted-foreground">Manage and create pages for your website</p>
-            </div>
-            <Link href={route('pages.create')}>
-                <Button>
-                    Add Page
-                </Button>
-            </Link>
+          </div>
+          <Link href={route('admin.pages.create')}>
+            <Button>
+              Add Page
+            </Button>
+          </Link>
         </div>
 
         <div className="rounded-lg shadow border p-4 mb-4">
@@ -146,7 +145,7 @@ export default function Index({ pages, filters }: Props) {
                   ? 'No pages found with your filter'
                   : 'Start by creating a new page'}
               </p>
-              <Link href={route('pages.create')}>
+              <Link href={route('admin.pages.create')}>
                 <Button>Add New Page</Button>
               </Link>
             </div>
@@ -180,12 +179,12 @@ export default function Index({ pages, filters }: Props) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={route('pages.show', page.id)}>
+                        <Link href={route('admin.pages.show', page.id)}>
                           <Button variant="ghost" size="sm">
                             View
                           </Button>
                         </Link>
-                        <Link href={route('pages.edit', page.id)}>
+                        <Link href={route('admin.pages.edit', page.id)}>
                           <Button variant="ghost" size="sm">
                             Edit
                           </Button>
