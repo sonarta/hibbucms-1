@@ -17,6 +17,7 @@ class Media extends Model
     use HasFactory;
 
     protected $fillable = [
+        'folder_id',
         'user_id',
         'name',
         'file_name',
@@ -48,6 +49,11 @@ class Media extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(MediaFolder::class, 'folder_id');
     }
 
     public function posts(): MorphToMany
@@ -177,6 +183,7 @@ class Media extends Model
         }
 
         $path = Storage::disk($this->disk)->path($this->path);
+        
         $image = self::imageManager()->read($path);
 
         // Resize if width is greater than 2000px

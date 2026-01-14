@@ -29,6 +29,10 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('media/{id}', [MediaController::class, 'show'])->name('admin.media.show');
     Route::delete('media/{id}', [MediaController::class, 'destroy'])->name('admin.media.destroy');
     Route::get('media/{id}/download', [MediaController::class, 'download'])->name('admin.media.download');
+    Route::post('media/folders', [MediaController::class, 'storeFolder'])->name('admin.media.folders.store');
+    Route::delete('media/folders/{id}', [MediaController::class, 'destroyFolder'])->name('admin.media.folders.destroy');
+    Route::post('media/bulk-destroy', [MediaController::class, 'bulkDestroy'])->name('admin.media.bulk-destroy');
+    Route::post('media/move', [MediaController::class, 'move'])->name('admin.media.move');
 
     // Category Routes
     Route::resource('categories', CategoryController::class)->names([
