@@ -7,6 +7,8 @@ import { AppearanceProvider } from './contexts/appearance-context';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+import { ErrorBoundary } from './components/error-boundary';
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
@@ -14,9 +16,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <AppearanceProvider>
-                <App {...props} />
-            </AppearanceProvider>
+            <ErrorBoundary>
+                <AppearanceProvider>
+                    <App {...props} />
+                </AppearanceProvider>
+            </ErrorBoundary>
         );
     },
     progress: {

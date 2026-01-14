@@ -126,8 +126,8 @@ export default function Index({ media, filters }: Props) {
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <div>
-                    <h1 className="text-2xl font-bold">Media</h1>
-                    <p className="text-muted-foreground">Manage and upload media files</p>
+                        <h1 className="text-2xl font-bold">Media</h1>
+                        <p className="text-muted-foreground">Manage and upload media files</p>
                     </div>
                     <div className="flex gap-2">
                         <Input
@@ -153,9 +153,8 @@ export default function Index({ media, filters }: Props) {
 
                 <div
                     {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-8 mb-4 text-center cursor-pointer transition-colors ${
-                        isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
-                    }`}
+                    className={`border-2 border-dashed rounded-lg p-8 mb-4 text-center cursor-pointer transition-colors ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
+                        }`}
                 >
                     <input {...getInputProps()} />
                     {uploading ? (
@@ -208,14 +207,14 @@ export default function Index({ media, filters }: Props) {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => router.visit(`/admin/media/${item.id}`)}
+                                            onClick={() => router.visit(route('admin.media.show', item.id))}
                                         >
                                             View
                                         </Button>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => window.open(`/admin/media/${item.id}/download`)}
+                                            onClick={() => window.open(route('admin.media.download', item.id))}
                                         >
                                             Download
                                         </Button>

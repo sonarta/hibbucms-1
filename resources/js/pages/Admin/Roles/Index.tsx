@@ -49,11 +49,11 @@ interface Props {
 const breadcrumbs = [
     {
         title: 'Dashboard',
-        href: '/admin/dashboard',
+        href: route('admin.dashboard'),
     },
     {
         title: 'Roles',
-        href: '/admin/roles',
+        href: route('admin.roles.index'),
     },
 ];
 
@@ -63,7 +63,7 @@ export default function Index({ roles, filters }: Props) {
     const handleSearch = (value: string) => {
         setSearch(value);
         router.get(
-            '/admin/roles',
+            route('admin.roles.index'),
             { search: value },
             {
                 preserveState: true,
@@ -74,7 +74,7 @@ export default function Index({ roles, filters }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Apakah Anda yakin ingin menghapus peran ini?')) {
-            router.delete(`/admin/roles/${id}`, {
+            router.delete(route('admin.roles.destroy', id), {
                 onSuccess: () => {
                     toast.success('Peran berhasil dihapus');
                 },
@@ -95,7 +95,7 @@ export default function Index({ roles, filters }: Props) {
                         <h1 className="text-2xl font-bold mb-1">Roles</h1>
                         <p>Manage roles and permissions</p>
                     </div>
-                    <Link href="/admin/roles/create">
+                    <Link href={route('admin.roles.create')}>
                         <Button>
                             <ShieldPlus className="mr-2 h-4 w-4" />
                             Add Role
@@ -128,7 +128,7 @@ export default function Index({ roles, filters }: Props) {
                                     ? 'No roles found matching your search'
                                     : 'Start by creating a new role to manage user access'}
                             </p>
-                            <Link href="/admin/roles/create">
+                            <Link href={route('admin.roles.create')}>
                                 <Button>
                                     <ShieldPlus className="mr-2 h-4 w-4" />
                                     Create First Role
@@ -204,7 +204,7 @@ export default function Index({ roles, filters }: Props) {
                                                 <DropdownMenuContent align="end" className="w-40">
                                                     <DropdownMenuItem asChild>
                                                         <Link
-                                                            href={`/admin/roles/${role.id}/edit`}
+                                                            href={route('admin.roles.edit', role.id)}
                                                             className="flex w-full items-center"
                                                         >
                                                             <Edit2 className="mr-2 h-4 w-4" />
@@ -242,12 +242,11 @@ export default function Index({ roles, filters }: Props) {
                                     return (
                                         <Link
                                             key={`page-${page}`}
-                                            href={`/admin/roles?${queryParams}`}
-                                            className={`px-3 py-1 rounded ${
-                                                page === roles.current_page
+                                            href={`${route('admin.roles.index')}?${queryParams}`}
+                                            className={`px-3 py-1 rounded ${page === roles.current_page
                                                     ? 'bg-white text-black'
                                                     : 'bg-gray-800 text-gray-200 hover:bg-[#0c1015]'
-                                            }`}
+                                                }`}
                                         >
                                             {page}
                                         </Link>

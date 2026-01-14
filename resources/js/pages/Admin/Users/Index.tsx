@@ -47,11 +47,11 @@ interface Props {
 const breadcrumbs = [
     {
         title: 'Dashboard',
-        href: '/admin/dashboard',
+        href: route('admin.dashboard'),
     },
     {
         title: 'Users',
-        href: '/admin/users',
+        href: route('admin.users.index'),
     },
 ];
 
@@ -62,7 +62,7 @@ export default function Index({ users, filters }: Props) {
     const handleSearch = (value: string) => {
         setSearch(value);
         router.get(
-            '/admin/users',
+            route('admin.users.index'),
             { search: value },
             {
                 preserveState: true,
@@ -73,7 +73,7 @@ export default function Index({ users, filters }: Props) {
 
     const handleDelete = (id: number) => {
         if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-            router.delete(`/admin/users/${id}`, {
+            router.delete(route('admin.users.destroy', id), {
                 onSuccess: () => {
                     toast.success('Pengguna berhasil dihapus');
                 },
@@ -97,7 +97,7 @@ export default function Index({ users, filters }: Props) {
                         <h1 className="text-2xl font-bold mb-1">Users</h1>
                         <p>Manage users and their access rights</p>
                     </div>
-                    <Link href="/admin/users/create">
+                    <Link href={route('admin.users.create')}>
                         <Button>
                             <UserPlus2 className="mr-2 h-4 w-4" />
                             Add User
@@ -177,7 +177,7 @@ export default function Index({ users, filters }: Props) {
                                             <DropdownMenuContent align="end" className="w-40">
                                                 <DropdownMenuItem asChild>
                                                     <Link
-                                                        href={`/admin/users/${user.id}`}
+                                                        href={route('admin.users.show', user.id)}
                                                         className="flex w-full items-center"
                                                     >
                                                         <Eye className="mr-2 h-4 w-4" />
@@ -186,7 +186,7 @@ export default function Index({ users, filters }: Props) {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
                                                     <Link
-                                                        href={`/admin/users/${user.id}/edit`}
+                                                        href={route('admin.users.edit', user.id)}
                                                         className="flex w-full items-center"
                                                     >
                                                         <Edit2 className="mr-2 h-4 w-4" />

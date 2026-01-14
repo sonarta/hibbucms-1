@@ -118,8 +118,8 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     }
 
     const url = type === 'custom' ? customLink.url :
-               type === 'page' ? `/pages/${(item as Page).slug}` :
-               type === 'post' ? `/posts/${(item as Post).slug}` : '/'
+      type === 'page' ? `/pages/${(item as Page).slug}` :
+        type === 'post' ? `/posts/${(item as Post).slug}` : '/'
 
     const title = type === 'custom' ? customLink.title : (item as Page | Post).title
 
@@ -316,7 +316,7 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
             }
 
             // Tambahkan item ke menu utama dengan parent_id null
-            const updatedItem = {...movedItem, parent_id: null};
+            const updatedItem = { ...movedItem, parent_id: null };
 
             // Sisipkan di posisi yang tepat (newIndex)
             updatedMenuItems.splice(newIndex, 0, updatedItem);
@@ -570,8 +570,8 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
   );
 
   const breadcrumbs = [
-    { title: "Admin", href: "/admin" },
-    { title: "Menu Builder", href: "/admin/menus" }
+    { title: "Admin", href: route('admin.dashboard') },
+    { title: "Menu Builder", href: route('admin.menus.index') }
   ]
 
   // CSS styles untuk ditambahkan ke <Head>
@@ -623,281 +623,281 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-        <Head title="Menu Builder">
-          <style>{dropzoneCSS}</style>
-        </Head>
-        <div className="p-4">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h1 className="text-2xl font-bold">Menu</h1>
-                <p className="text-muted-foreground">Create and manage navigation for your site</p>
-              </div>
-              <Button onClick={handleUpdateMenu} disabled={processing}>Save Menu</Button>
-            </div>
+      <Head title="Menu Builder">
+        <style>{dropzoneCSS}</style>
+      </Head>
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Menu</h1>
+            <p className="text-muted-foreground">Create and manage navigation for your site</p>
+          </div>
+          <Button onClick={handleUpdateMenu} disabled={processing}>Save Menu</Button>
+        </div>
 
-            <div className="grid gap-6 md:grid-cols-12">
-            <div className="md:col-span-4 space-y-6">
-                <Card>
-                <CardHeader>
+        <div className="grid gap-6 md:grid-cols-12">
+          <div className="md:col-span-4 space-y-6">
+            <Card>
+              <CardHeader>
                 <CardTitle>Pengaturan Menu</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="space-y-2">
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
                   <Label htmlFor="menu-select">Select Menu to Edit</Label>
                   <Select value={activeMenu.toString()} onValueChange={handleMenuChange}>
-                        <SelectTrigger>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select menu" />
-                        </SelectTrigger>
-                        <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                       {initialMenus.map((menu) => (
                         <SelectItem key={menu.id} value={menu.id.toString()}>
-                            {menu.name}
-                            </SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    </div>
+                          {menu.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="menu-name">Menu Name</Label>
-                    <Input
-                        id="menu-name"
+                  <Input
+                    id="menu-name"
                     value={data.name}
                     onChange={e => setData('name', e.target.value)}
-                    />
-                    </div>
+                  />
+                </div>
 
-                    <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="menu-location">Menu Location</Label>
                   <Select value={data.location} onValueChange={(value) => setData('location', value)}>
-                        <SelectTrigger>
+                    <SelectTrigger>
                       <SelectValue placeholder="Select location" />
-                        </SelectTrigger>
-                        <SelectContent>
+                    </SelectTrigger>
+                    <SelectContent>
                       <SelectItem value="header">Header Navigation</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    </div>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                    <div className="pt-2">
+                <div className="pt-2">
                   <Button variant="outline" className="w-full" onClick={handleCreateMenu} disabled={processing}>
-                        <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Create New Menu
-                    </Button>
-                    </div>
-                </CardContent>
-                </Card>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Tabs defaultValue="pages">
-                <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="pages">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="pages">Pages</TabsTrigger>
                 <TabsTrigger value="posts">Posts</TabsTrigger>
                 <TabsTrigger value="custom">Custom Link</TabsTrigger>
-                </TabsList>
+              </TabsList>
 
-                <TabsContent value="pages" className="border rounded-md mt-2">
-                    <div className="p-4 space-y-4">
-                    <div className="relative">
+              <TabsContent value="pages" className="border rounded-md mt-2">
+                <div className="p-4 space-y-4">
+                  <div className="relative">
                     <Input placeholder="Search page..." />
-                    </div>
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  </div>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {pages.map((page) => (
-                        <div key={page.id} className="flex items-center justify-between p-2 border rounded-md">
-                            <div className="text-sm">{page.title}</div>
-                            <Button size="sm" variant="ghost" onClick={() => addMenuItem("page", page)}>
-                            <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        ))}
-                    </div>
-                    </div>
-                </TabsContent>
+                      <div key={page.id} className="flex items-center justify-between p-2 border rounded-md">
+                        <div className="text-sm">{page.title}</div>
+                        <Button size="sm" variant="ghost" onClick={() => addMenuItem("page", page)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
 
-                <TabsContent value="posts" className="border rounded-md mt-2">
-                    <div className="p-4 space-y-4">
-                    <div className="relative">
+              <TabsContent value="posts" className="border rounded-md mt-2">
+                <div className="p-4 space-y-4">
+                  <div className="relative">
                     <Input placeholder="Search post..." />
-                    </div>
-                    <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  </div>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
                     {posts.map((post) => (
-                        <div key={post.id} className="flex items-center justify-between p-2 border rounded-md">
-                            <div className="text-sm">{post.title}</div>
-                            <Button size="sm" variant="ghost" onClick={() => addMenuItem("post", post)}>
-                            <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        ))}
-                    </div>
-                    </div>
-                </TabsContent>
+                      <div key={post.id} className="flex items-center justify-between p-2 border rounded-md">
+                        <div className="text-sm">{post.title}</div>
+                        <Button size="sm" variant="ghost" onClick={() => addMenuItem("post", post)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
 
-                <TabsContent value="custom" className="border rounded-md mt-2">
-                    <div className="p-4 space-y-4">
-                    <div className="space-y-2">
+              <TabsContent value="custom" className="border rounded-md mt-2">
+                <div className="p-4 space-y-4">
+                  <div className="space-y-2">
                     <Label htmlFor="link-text">Link Text</Label>
-                        <Input
-                        id="link-text"
+                    <Input
+                      id="link-text"
                       placeholder="Menu Item Text"
                       value={customLink.title}
                       onChange={(e) => setCustomLink(prev => ({ ...prev, title: e.target.value }))}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="link-url">URL</Label>
-                        <Input
-                        id="link-url"
-                        placeholder="https://example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="link-url">URL</Label>
+                    <Input
+                      id="link-url"
+                      placeholder="https://example.com"
                       value={customLink.url}
                       onChange={(e) => setCustomLink(prev => ({ ...prev, url: e.target.value }))}
-                        />
-                    </div>
+                    />
+                  </div>
                   <Button
                     onClick={() => addMenuItem("custom", customLink)}
                     disabled={!customLink.title || !customLink.url}
                   >
-                        <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Add to Menu
-                    </Button>
-                    </div>
-                </TabsContent>
-                </Tabs>
-            </div>
+                  </Button>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
 
-            <div className="md:col-span-8">
-                <Card>
-                <CardHeader>
+          <div className="md:col-span-8">
+            <Card>
+              <CardHeader>
                 <CardTitle>Menu Structure</CardTitle>
                 <p className="text-sm text-muted-foreground">Drag and drop to arrange menu order and create submenus</p>
-                </CardHeader>
-                <CardContent>
+              </CardHeader>
+              <CardContent>
                 {!activeMenu ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Please select a menu from the dropdown on the left panel.
                   </div>
                 ) : menuItems.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-center py-8 text-muted-foreground">
                     Your menu is empty. Add items from the left panel.
-                    </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="nested-menu-dropzone p-4">
-                          <ReactSortable
-                            list={menuItems}
-                            setList={(newItems) => {
-                              // Gunakan setTimeout untuk menghindari loop yang terlalu cepat
-                              setTimeout(() => {
-                                handleSortItems(newItems);
-                              }, 10);
-                            }}
-                            group="nested-menu"
-                            animation={150}
-                            fallbackOnBody={true}
-                            swapThreshold={0.65}
-                            ghostClass="sortable-ghost"
-                            chosenClass="sortable-chosen"
-                            dragClass="sortable-drag"
-                            handle=".cursor-move"
-                            className="space-y-2"
-                            onEnd={handleMoveItem}
-                            onAdd={(evt) => {
-                              // Jika ada submenu yang dipindahkan ke menu utama
-                              try {
-                                const newIndex = evt.newIndex !== undefined ? evt.newIndex : 0;
-                                // Cari item yang dipindahkan (dari dataset)
-                                const itemId = evt.item.getAttribute('data-id');
-                                const fromParentId = evt.from.dataset.parentId;
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="nested-menu-dropzone p-4">
+                      <ReactSortable
+                        list={menuItems}
+                        setList={(newItems) => {
+                          // Gunakan setTimeout untuk menghindari loop yang terlalu cepat
+                          setTimeout(() => {
+                            handleSortItems(newItems);
+                          }, 10);
+                        }}
+                        group="nested-menu"
+                        animation={150}
+                        fallbackOnBody={true}
+                        swapThreshold={0.65}
+                        ghostClass="sortable-ghost"
+                        chosenClass="sortable-chosen"
+                        dragClass="sortable-drag"
+                        handle=".cursor-move"
+                        className="space-y-2"
+                        onEnd={handleMoveItem}
+                        onAdd={(evt) => {
+                          // Jika ada submenu yang dipindahkan ke menu utama
+                          try {
+                            const newIndex = evt.newIndex !== undefined ? evt.newIndex : 0;
+                            // Cari item yang dipindahkan (dari dataset)
+                            const itemId = evt.item.getAttribute('data-id');
+                            const fromParentId = evt.from.dataset.parentId;
 
-                                console.log('onAdd event triggered in main list', {
-                                  itemId,
-                                  fromParentId,
-                                  newIndex,
-                                  from: evt.from.dataset.listId,
-                                  to: evt.to.dataset.listId
-                                });
+                            console.log('onAdd event triggered in main list', {
+                              itemId,
+                              fromParentId,
+                              newIndex,
+                              from: evt.from.dataset.listId,
+                              to: evt.to.dataset.listId
+                            });
 
-                                if (itemId && fromParentId) {
-                                  // Cari item dalam hierarki menu
-                                  const newMenuItems = [...menuItems];
-                                  const parentIndex = newMenuItems.findIndex(item => item.id.toString() === fromParentId);
+                            if (itemId && fromParentId) {
+                              // Cari item dalam hierarki menu
+                              const newMenuItems = [...menuItems];
+                              const parentIndex = newMenuItems.findIndex(item => item.id.toString() === fromParentId);
 
-                                  console.log('Parent found:', parentIndex, newMenuItems[parentIndex]);
+                              console.log('Parent found:', parentIndex, newMenuItems[parentIndex]);
 
-                                  if (parentIndex !== -1 && newMenuItems[parentIndex].children) {
-                                    // Cari item dalam children
-                                    const childIndex = newMenuItems[parentIndex].children.findIndex(
-                                      child => child.id.toString() === itemId
-                                    );
+                              if (parentIndex !== -1 && newMenuItems[parentIndex].children) {
+                                // Cari item dalam children
+                                const childIndex = newMenuItems[parentIndex].children.findIndex(
+                                  child => child.id.toString() === itemId
+                                );
 
-                                    console.log('Child found:', childIndex, newMenuItems[parentIndex].children[childIndex]);
+                                console.log('Child found:', childIndex, newMenuItems[parentIndex].children[childIndex]);
 
-                                    if (childIndex !== -1) {
-                                      // Ambil item dan hapus dari children
-                                      const movedItem = {...newMenuItems[parentIndex].children[childIndex], parent_id: null};
-                                      newMenuItems[parentIndex].children = newMenuItems[parentIndex].children.filter(
-                                        child => child.id.toString() !== itemId
-                                      );
+                                if (childIndex !== -1) {
+                                  // Ambil item dan hapus dari children
+                                  const movedItem = { ...newMenuItems[parentIndex].children[childIndex], parent_id: null };
+                                  newMenuItems[parentIndex].children = newMenuItems[parentIndex].children.filter(
+                                    child => child.id.toString() !== itemId
+                                  );
 
-                                      // Masukkan ke menu utama
-                                      newMenuItems.splice(newIndex, 0, movedItem);
+                                  // Masukkan ke menu utama
+                                  newMenuItems.splice(newIndex, 0, movedItem);
 
-                                      console.log('Updated menu items:', newMenuItems);
+                                  console.log('Updated menu items:', newMenuItems);
 
-                                      // Update state dengan timer untuk mengatasi race condition
-                                      setTimeout(() => {
-                                        setMenuItems(newMenuItems);
-                                      }, 50);
+                                  // Update state dengan timer untuk mengatasi race condition
+                                  setTimeout(() => {
+                                    setMenuItems(newMenuItems);
+                                  }, 50);
 
-                                      // Kirim ke backend dengan delay untuk memastikan state terupdate dulu
-                                      setTimeout(() => {
-                                        router.post(route('admin.menus.items.reorder', activeMenu), {
-                                          items: [{
-                                            id: movedItem.id,
-                                            parent_id: null,
-                                            order: newIndex
-                                          }]
-                                        }, {
-                                          preserveScroll: true,
-                                          onSuccess: () => {
-                                            // Refresh data dari server setelah update
-                                            setTimeout(() => {
-                                              window.location.reload();
-                                            }, 100);
-                                          }
-                                        });
-                                      }, 100);
-                                    }
-                                  }
+                                  // Kirim ke backend dengan delay untuk memastikan state terupdate dulu
+                                  setTimeout(() => {
+                                    router.post(route('admin.menus.items.reorder', activeMenu), {
+                                      items: [{
+                                        id: movedItem.id,
+                                        parent_id: null,
+                                        order: newIndex
+                                      }]
+                                    }, {
+                                      preserveScroll: true,
+                                      onSuccess: () => {
+                                        // Refresh data dari server setelah update
+                                        setTimeout(() => {
+                                          window.location.reload();
+                                        }, 100);
+                                      }
+                                    });
+                                  }, 100);
                                 }
-                              } catch (error) {
-                                console.error('Error handling onAdd for main list:', error);
                               }
-                            }}
-                            emptyInsertThreshold={10}
-                            forceFallback={true}
-                            delay={100}
-                            delayOnTouchOnly={true}
-                            scroll={true}
-                            scrollSensitivity={30}
-                            bubbleScroll={true}
-                            data-list-id="main"
-                            // @ts-expect-error - hoverClass tidak ada di tipe ReactSortable tetapi bekerja dengan Sortablejs
-                            hoverClass="dropzone-hover"
-                          >
-                            {menuItems.map((item, index) => renderMenuItem(item, index, menuItems))}
-                          </ReactSortable>
-                        </div>
-                        <div className="mt-4 text-center">
-                          <p className="text-xs text-muted-foreground">
-                            Tip: Drag and drop menu item to another item to create a submenu. Drag item out to return to the main menu.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                </CardContent>
-                </Card>
-            </div>
-            </div>
+                            }
+                          } catch (error) {
+                            console.error('Error handling onAdd for main list:', error);
+                          }
+                        }}
+                        emptyInsertThreshold={10}
+                        forceFallback={true}
+                        delay={100}
+                        delayOnTouchOnly={true}
+                        scroll={true}
+                        scrollSensitivity={30}
+                        bubbleScroll={true}
+                        data-list-id="main"
+                        // @ts-expect-error - hoverClass tidak ada di tipe ReactSortable tetapi bekerja dengan Sortablejs
+                        hoverClass="dropzone-hover"
+                      >
+                        {menuItems.map((item, index) => renderMenuItem(item, index, menuItems))}
+                      </ReactSortable>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        Tip: Drag and drop menu item to another item to create a submenu. Drag item out to return to the main menu.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
+      </div>
     </AppLayout>
   )
 }
