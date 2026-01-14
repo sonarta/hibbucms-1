@@ -18,11 +18,11 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DefaultThemeSeeder::class,
             MenuSeeder::class,
-            // CategorySeeder::class,
-            // TagSeeder::class,
-            // PostSeeder::class,
-            // PageSeeder::class,
-            // SettingsSeeder::class,
+            CategorySeeder::class,
+            TagSeeder::class,
+            PostSeeder::class,
+            PageSeeder::class,
+            SettingsSeeder::class,
         ]);
     }
 }
