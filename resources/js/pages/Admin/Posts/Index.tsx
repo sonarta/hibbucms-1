@@ -239,9 +239,9 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                             </Link>
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
+                        <Table containerClassName="overflow-visible">
+                            <TableHeader className="sticky top-[66px] z-10 bg-background/80 backdrop-blur-md shadow-sm">
+                                <TableRow className="hover:bg-transparent">
                                     <TableHead>Title</TableHead>
                                     <TableHead>Category</TableHead>
                                     <TableHead>Tags</TableHead>

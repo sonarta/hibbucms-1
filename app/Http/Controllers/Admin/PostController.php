@@ -48,7 +48,7 @@ class PostController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        $posts = $query->latest()->paginate(10);
+        $posts = $query->latest()->paginate(25);
 
         // Transform posts data to include featured image URL
         $posts->through(function ($post) {
