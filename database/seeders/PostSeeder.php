@@ -24,7 +24,7 @@ class PostSeeder extends Seeder
         $tags = Tag::all();
 
         // Membuat 50 post dengan data palsu
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 1000; $i++) {
             $title = $faker->sentence();
             $status = $faker->randomElement(['draft', 'published', 'scheduled']);
             $publishedAt = $status === 'published' ? $faker->dateTimeBetween('-1 year', 'now') :

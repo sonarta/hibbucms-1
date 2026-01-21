@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Plus, ImageIcon, FileText } from 'lucide-react';
 import ReactDOM from 'react-dom/client';
+import { Pagination } from '@/components/ui/pagination';
 
 interface Category {
     id: number;
@@ -75,7 +76,7 @@ const breadcrumbs = [
 ];
 
 export default function Index({ posts, filters = { search: '', status: 'all', category: 'all' } }: Props) {
-    const [search, setSearch] = useState(filters.search);
+    const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status);
     const [category, setCategory] = useState(filters.category);
 
@@ -348,32 +349,15 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                 {/* Pagination */}
                 {posts.last_page > 1 && (
                     <div className="mt-4 flex justify-center">
-                        <div className="flex space-x-2">
-                            {Array.from({ length: posts.last_page }, (_, i) => i + 1).map(
-                                (page) => {
-                                    const queryParams = new URLSearchParams({
-                                        page: page.toString(),
-                                        search,
-                                        status,
-                                        category,
-                                    }).toString();
-
-                                    return (
-                                        <Link
-                                            key={`page-${page}`}
-                                            href={`${route('admin.posts.index')}?${queryParams}`}
-                                            className={`px-3 py-1 rounded ${
-                                                page === posts.current_page
-                                                    ? 'bg-white text-black'
-                                                    : 'bg-gray-800 text-gray-200 hover:bg-[#0c1015]'
-                                            }`}
-                                        >
-                                            {page}
-                                        </Link>
-                                    );
-                                }
-                            )}
-                        </div>
+                        <Pagination
+                            currentPage={posts.current_page}
+                            lastPage={posts.last_page}
+                            queryParams={{
+                                search: search || '',
+                                status,
+                                category
+                            }}
+                        />
                     </div>
                 )}
             </div>

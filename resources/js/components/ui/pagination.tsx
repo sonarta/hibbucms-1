@@ -12,15 +12,22 @@ import { buttonVariants } from "@/components/ui/button"
 interface PaginationProps extends React.ComponentProps<"nav"> {
   currentPage: number
   lastPage: number
+  queryParams?: Record<string, string>
 }
 
-function Pagination({ currentPage, lastPage, className, ...props }: PaginationProps) {
+function Pagination({ currentPage, lastPage, queryParams = {}, className, ...props }: PaginationProps) {
   const pages = Array.from({ length: lastPage }, (_, i) => i + 1)
   const showPages = pages.filter(page => {
     if (page === 1 || page === lastPage) return true
     if (page >= currentPage - 1 && page <= currentPage + 1) return true
     return false
   })
+
+  const getUrl = (page: number) => {
+    const params = new URLSearchParams(queryParams)
+    params.set('page', page.toString())
+    return `?${params.toString()}`
+  }
 
   return (
     <nav
@@ -34,7 +41,7 @@ function Pagination({ currentPage, lastPage, className, ...props }: PaginationPr
         {currentPage > 1 && (
           <li>
             <Link
-              href={`?page=${currentPage - 1}`}
+              href={getUrl(currentPage - 1)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "gap-1 px-2.5"
@@ -61,7 +68,7 @@ function Pagination({ currentPage, lastPage, className, ...props }: PaginationPr
               )}
               <li>
                 <Link
-                  href={`?page=${page}`}
+                  href={getUrl(page)}
                   className={cn(
                     buttonVariants({
                       variant: page === currentPage ? "outline" : "ghost",
@@ -80,7 +87,7 @@ function Pagination({ currentPage, lastPage, className, ...props }: PaginationPr
         {currentPage < lastPage && (
           <li>
             <Link
-              href={`?page=${currentPage + 1}`}
+              href={getUrl(currentPage + 1)}
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "gap-1 px-2.5"
