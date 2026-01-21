@@ -1,12 +1,17 @@
-import { useTheme } from "next-themes"
+import { useAppearance } from "@/contexts/appearance-context"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const { appearance } = useAppearance()
+
+  // Resolve theme for Sonner (it doesn't support 'system')
+  const resolvedTheme = appearance === 'system'
+    ? (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : appearance
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={resolvedTheme as ToasterProps["theme"]}
       className="toaster group"
       style={
         {
@@ -21,3 +26,4 @@ const Toaster = ({ ...props }: ToasterProps) => {
 }
 
 export { Toaster }
+
