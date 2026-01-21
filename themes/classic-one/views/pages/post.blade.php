@@ -15,6 +15,9 @@
                     <i class="fa fa-calendar"></i> {{ $post->published_at->format('F d, Y') }}
                 </span>
 
+                {{-- Plugin Meta Hook (Reading Time, etc) --}}
+                {!! apply_filters('post.meta', '', $post) !!}
+
                 @if ($post->category)
                     <span class="post-category">
                         <i class="fa fa-folder"></i>
@@ -35,7 +38,7 @@
 
         <!-- Post Content -->
         <div class="post-content">
-            {!! $post->content !!}
+            {!! apply_filters('post.content', $post->content, $post) !!}
         </div>
 
         <!-- Post Tags -->
@@ -84,7 +87,8 @@
                                 @if ($relatedPost->featured_image)
                                     <div class="post-thumbnail">
                                         <a href="{{ route('blog.post', $relatedPost->slug) }}">
-                                            <img src="{{ asset('storage/' . $relatedPost->featured_image) }}" alt="{{ $relatedPost->title }}">
+                                            <img src="{{ asset('storage/' . $relatedPost->featured_image) }}"
+                                                alt="{{ $relatedPost->title }}">
                                         </a>
                                     </div>
                                 @endif

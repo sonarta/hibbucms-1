@@ -3,7 +3,7 @@
     "slug": "hello-world",
     "version": "1.0.0",
     "description": "A simple hello world plugin demonstrating the plugin system.",
-    "author": "HibbuCMS",
+    "author": "M FIRDAUS RIAWAN",
     "author_url": "https://firdausriawan.my.id",
     "requires": {
         "cms_version": "^1.0.0"

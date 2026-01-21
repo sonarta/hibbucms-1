@@ -8,7 +8,7 @@
  */
 
 // Hook that runs after theme is loaded
-add_action('theme.loaded', function($theme) {
+add_action('theme.loaded', function ($theme) {
     // Register theme assets, menus, and sidebars
     register_theme_menus();
     register_theme_sidebars();
@@ -16,7 +16,7 @@ add_action('theme.loaded', function($theme) {
 });
 
 // Filter to modify home page data
-add_filter('home_page_data', function($data) {
+add_filter('home_page_data', function ($data) {
     // Add featured posts to home page data
     if (!isset($data['featured_posts'])) {
         $data['featured_posts'] = \App\Models\Post::where('status', 'published')
@@ -24,7 +24,7 @@ add_filter('home_page_data', function($data) {
             ->limit(3)
             ->get();
     }
-    
+
     // Add recent posts for sidebar
     if (!isset($data['recentPosts'])) {
         $data['recentPosts'] = \App\Models\Post::where('status', 'published')
@@ -32,24 +32,24 @@ add_filter('home_page_data', function($data) {
             ->limit(5)
             ->get();
     }
-    
+
     return $data;
 });
 
 // Filter to modify number of posts per page on blog page
-add_filter('blog_posts_per_page', function($perPage) {
+add_filter('blog_posts_per_page', function ($perPage) {
     // Change number of posts per page to 10 (classic blog style)
     return 10;
 });
 
 // Filter to modify query on blog page
-add_filter('blog_posts_query', function($query, $request) {
+add_filter('blog_posts_query', function ($query, $request) {
     // Modify query if needed
     return $query;
 }, 10);
 
 // Filter to modify blog page data
-add_filter('blog_page_data', function($data, $request) {
+add_filter('blog_page_data', function ($data, $request) {
     // Add popular posts to sidebar
     if (!isset($data['popular_posts'])) {
         $data['popular_posts'] = \App\Models\Post::where('status', 'published')
@@ -57,7 +57,7 @@ add_filter('blog_page_data', function($data, $request) {
             ->limit(5)
             ->get();
     }
-    
+
     // Add recent posts for sidebar
     if (!isset($data['recentPosts'])) {
         $data['recentPosts'] = \App\Models\Post::where('status', 'published')
@@ -65,12 +65,12 @@ add_filter('blog_page_data', function($data, $request) {
             ->limit(5)
             ->get();
     }
-    
+
     return $data;
 }, 10);
 
 // Action that runs after post is found
-add_action('post_found', function($post) {
+add_action('post_found', function ($post) {
     // Increment view count
     if (isset($post->views)) {
         $post->increment('views');
@@ -78,35 +78,33 @@ add_action('post_found', function($post) {
 });
 
 // Filter to modify related posts query
-add_filter('related_posts_query', function($query, $post) {
-    // Get posts with the same categories
-    $categoryIds = [];
-    
-    // Check if post has categories before trying to access pluck method
-    if ($post && $post->categories) {
-        $categoryIds = $post->categories->pluck('id')->toArray();
+add_filter('related_posts_query', function ($query, $post) {
+    // Get category ID from post
+    $categoryId = $post->category_id ?? null;
+
+    // If post has category, filter by same category
+    if ($categoryId) {
+        return $query->where('category_id', $categoryId);
     }
-    
-    return $query->whereHas('categories', function($q) use ($categoryIds) {
-        $q->whereIn('categories.id', $categoryIds);
-    });
+
+    return $query;
 }, 10);
 
 // Filter to modify number of related posts
-add_filter('related_posts_count', function($count) {
+add_filter('related_posts_count', function ($count) {
     // Show 3 related posts
     return 3;
 });
 
 // Filter to modify single post data
-add_filter('single_post_data', function($data) {
+add_filter('single_post_data', function ($data) {
     // Add author info to single post data
     if (isset($data['post']) && isset($data['post']->author)) {
         $data['author_posts_count'] = \App\Models\Post::where('author_id', $data['post']->author_id)
             ->where('status', 'published')
             ->count();
     }
-    
+
     // Add recent posts for sidebar
     if (!isset($data['recentPosts'])) {
         $data['recentPosts'] = \App\Models\Post::where('status', 'published')
@@ -114,45 +112,53 @@ add_filter('single_post_data', function($data) {
             ->limit(5)
             ->get();
     }
-    
+
     // Add categories for sidebar
     if (!isset($data['categories'])) {
-        $data['categories'] = \App\Models\Category::withCount(['posts' => function ($query) {
-            $query->where('status', 'published');
-        }])->get();
+        $data['categories'] = \App\Models\Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 'published');
+            }
+        ])->get();
     }
-    
+
     // Add tags for sidebar
     if (!isset($data['tags'])) {
-        $data['tags'] = \App\Models\Tag::withCount(['posts' => function ($query) {
-            $query->where('status', 'published');
-        }])->get();
+        $data['tags'] = \App\Models\Tag::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 'published');
+            }
+        ])->get();
     }
-    
+
     return $data;
 });
 
 // Action that runs after page is found
-add_action('page_found', function($page) {
+add_action('page_found', function ($page) {
     // Do something after page is found
 });
 
 // Filter to modify page data
-add_filter('page_data', function($data) {
+add_filter('page_data', function ($data) {
     // Add categories for sidebar
     if (!isset($data['categories'])) {
-        $data['categories'] = \App\Models\Category::withCount(['posts' => function ($query) {
-            $query->where('status', 'published');
-        }])->get();
+        $data['categories'] = \App\Models\Category::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 'published');
+            }
+        ])->get();
     }
-    
+
     // Add tags for sidebar
     if (!isset($data['tags'])) {
-        $data['tags'] = \App\Models\Tag::withCount(['posts' => function ($query) {
-            $query->where('status', 'published');
-        }])->get();
+        $data['tags'] = \App\Models\Tag::withCount([
+            'posts' => function ($query) {
+                $query->where('status', 'published');
+            }
+        ])->get();
     }
-    
+
     // Add recent posts for sidebar
     if (!isset($data['recentPosts'])) {
         $data['recentPosts'] = \App\Models\Post::where('status', 'published')
@@ -160,12 +166,12 @@ add_filter('page_data', function($data) {
             ->limit(5)
             ->get();
     }
-    
+
     return $data;
 });
 
 // Filter to modify template hierarchy
-add_filter('template_hierarchy', function($templates, $theme) {
+add_filter('template_hierarchy', function ($templates, $theme) {
     // Add templates directory to hierarchy
     if (is_array($templates)) {
         foreach ($templates as $key => $template) {
@@ -176,35 +182,38 @@ add_filter('template_hierarchy', function($templates, $theme) {
             }
         }
     }
-    
+
     return $templates;
 }, 10);
 
 /**
  * Function to register theme menus
  */
-function register_theme_menus() {
+function register_theme_menus()
+{
     // Register theme menus here
 }
 
 /**
  * Function to register theme sidebars
  */
-function register_theme_sidebars() {
+function register_theme_sidebars()
+{
     // Register theme sidebars here
 }
 
 /**
  * Function to register theme assets (CSS, JavaScript)
  */
-function enqueue_theme_assets() {
+function enqueue_theme_assets()
+{
     // Register and enqueue theme stylesheet
-    add_action('theme.styles', function() {
+    add_action('theme.styles', function () {
         echo '<link rel="stylesheet" href="' . theme_asset('css/style.css') . '">';
     });
-    
+
     // Register and enqueue theme JavaScript
-    add_action('theme.scripts', function() {
+    add_action('theme.scripts', function () {
         echo '<script src="' . theme_asset('js/main.js') . '"></script>';
     });
 }

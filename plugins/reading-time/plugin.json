@@ -1,0 +1,16 @@
+{
+    "name": "Reading Time",
+    "slug": "reading-time",
+    "version": "1.0.0",
+    "description": "Displays estimated reading time for posts based on word count.",
+    "author": "M FIRDAUS RIAWAN",
+    "author_url": "https://firdausriawan.my.id",
+    "requires": {
+        "cms_version": "^1.0.0"
+    },
+    "settings": {
+        "words_per_minute": 200,
+        "show_on_archive": true,
+        "show_on_single": true
+    }
+}

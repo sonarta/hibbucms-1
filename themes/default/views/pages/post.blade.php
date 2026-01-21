@@ -18,6 +18,9 @@
                             {{ $post->published_at->format('d M Y') }}
                         </span>
 
+                        {{-- Reading Time Hook --}}
+                        {!! apply_filters('post.meta', '', $post) !!}
+
                         @if ($post->category)
                             <a href="{{ route('blog', ['category' => $post->category->slug]) }}"
                                 class="me-3 text-decoration-none">
@@ -38,7 +41,7 @@
 
                 <!-- Post Content -->
                 <article class="blog-post mb-5">
-                    {!! $post->content !!}
+                    {!! apply_filters('post.content', $post->content, $post) !!}
                 </article>
 
                 <!-- Tags -->
@@ -47,8 +50,7 @@
                         <h5>Tags:</h5>
                         <div class="d-flex flex-wrap gap-2">
                             @foreach ($post->tags as $tag)
-                                <a href="{{ route('blog', ['tag' => $tag->slug]) }}"
-                                    class="btn btn-outline-secondary btn-sm">
+                                <a href="{{ route('blog', ['tag' => $tag->slug]) }}" class="btn btn-outline-secondary btn-sm">
                                     {{ $tag->name }}
                                 </a>
                             @endforeach
@@ -65,8 +67,8 @@
                                 <div class="col-md-4">
                                     <div class="card h-100">
                                         @if ($relatedPost->featured_image)
-                                            <img src="{{ asset('storage/' . $relatedPost->featured_image) }}"
-                                                class="card-img-top" alt="{{ $relatedPost->title }}">
+                                            <img src="{{ asset('storage/' . $relatedPost->featured_image) }}" class="card-img-top"
+                                                alt="{{ $relatedPost->title }}">
                                         @endif
 
                                         <div class="card-body">
