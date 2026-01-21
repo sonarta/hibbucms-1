@@ -36,7 +36,7 @@ export function NavMain({ items, label }: NavMainProps) {
       const segments = url.split('/')
       // Mengambil segment yang merepresentasikan resource (posts, categories, tags, etc)
       return segments.find(segment =>
-        ['dashboard','posts', 'categories', 'tags', 'pages', 'users', 'roles', 'media', 'menus', 'themes', 'settings'].includes(segment)
+        ['dashboard','posts', 'categories', 'tags', 'pages', 'users', 'roles', 'media', 'menus', 'themes', 'plugins', 'settings'].includes(segment)
       )
     }
 

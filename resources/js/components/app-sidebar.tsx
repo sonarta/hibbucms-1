@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, File, FileText, Settings, Users, Shield, Image, Paintbrush, AlignJustify } from 'lucide-react';
+import { LayoutGrid, File, FileText, Settings, Users, Shield, Image, Paintbrush, AlignJustify, Puzzle } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -66,6 +66,11 @@ const adminNavItems: NavItem[] = [
         title: 'Themes',
         href: route('admin.themes.index'),
         icon: Paintbrush,
+    },
+    {
+        title: 'Plugins',
+        href: route('admin.plugins.index'),
+        icon: Puzzle,
     },
     {
         title: 'Settings',

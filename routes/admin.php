@@ -112,6 +112,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
         Route::post('/upload', [ThemeController::class, 'upload'])->name('admin.themes.upload');
     });
 
+    // Plugin Management
+    Route::prefix('plugins')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PluginController::class, 'index'])->name('admin.plugins.index');
+        Route::post('/{plugin}/activate', [\App\Http\Controllers\Admin\PluginController::class, 'activate'])->name('admin.plugins.activate');
+        Route::post('/{plugin}/deactivate', [\App\Http\Controllers\Admin\PluginController::class, 'deactivate'])->name('admin.plugins.deactivate');
+        Route::post('/scan', [\App\Http\Controllers\Admin\PluginController::class, 'scan'])->name('admin.plugins.scan');
+        Route::delete('/{plugin}', [\App\Http\Controllers\Admin\PluginController::class, 'destroy'])->name('admin.plugins.destroy');
+        Route::post('/upload', [\App\Http\Controllers\Admin\PluginController::class, 'upload'])->name('admin.plugins.upload');
+    });
+
     // Menu Routes
     Route::resource('menus', MenuController::class)->names([
         'index' => 'admin.menus.index',
@@ -130,7 +140,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
 
     // Settings Routes
     Route::prefix('settings')->group(function () {
-        Route::get('/', function() {
+        Route::get('/', function () {
             return redirect()->route('admin.settings.general');
         });
         Route::get('/general', [SettingsController::class, 'general'])->name('admin.settings.general');
@@ -144,7 +154,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
 
         Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
         Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
-        
+
         // This should be last to avoid conflicts with specific routes
         Route::put('/{group}', [SettingsController::class, 'update'])->name('admin.settings.update');
 
