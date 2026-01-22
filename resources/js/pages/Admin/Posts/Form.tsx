@@ -15,7 +15,7 @@ import RichTextEditor from '@/components/RichTextEditor';
 import MediaPicker from '@/components/MediaPicker';
 import { SaveIndicator } from '@/components/SaveIndicator';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { Loader2, History } from 'lucide-react';
+import { Loader2, History, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Category {
@@ -37,7 +37,7 @@ interface Props {
         excerpt: string;
         content: string;
         featured_image: string;
-        status: 'draft' | 'published';
+        status: 'draft' | 'published' | 'scheduled';
         category_id: number;
         tag_ids: number[];
         featured_image_url?: string;
@@ -56,9 +56,10 @@ export default function Form({ post, categories, tags, media }: Props) {
         excerpt: post?.excerpt || '',
         content: post?.content || '',
         featured_image: null as File | null,
-        status: post?.status || 'draft',
+        status: (post?.status || 'draft') as 'draft' | 'published' | 'scheduled',
         category_id: post?.category_id?.toString() || '',
         tag_ids: post?.tag_ids?.map(id => id.toString()) || [],
+        published_at: '',
     });
 
     const [selectedMediaId, setSelectedMediaId] = useState<string | undefined>(
@@ -122,6 +123,12 @@ export default function Form({ post, categories, tags, media }: Props) {
         formData.append('content', values.content);
         formData.append('status', values.status);
         formData.append('category_id', values.category_id);
+
+        // Add published_at for scheduled posts
+        if (values.status === 'scheduled' && values.published_at) {
+            formData.append('published_at', values.published_at);
+        }
+
         values.tag_ids.forEach((tagId) => {
             formData.append('tags[]', tagId);
         });
@@ -252,10 +259,12 @@ export default function Form({ post, categories, tags, media }: Props) {
 
                                 <Select
                                     value={values.status}
-                                    onValueChange={(value: 'draft' | 'published') =>
+                                    onValueChange={(value: 'draft' | 'published' | 'scheduled') =>
                                         setValues({
                                             ...values,
                                             status: value,
+                                            // Clear published_at if not scheduled
+                                            published_at: value !== 'scheduled' ? '' : values.published_at,
                                         })
                                     }
                                 >
@@ -265,9 +274,35 @@ export default function Form({ post, categories, tags, media }: Props) {
                                     <SelectContent>
                                         <SelectItem value="draft" className=" hover:bg-gray-800">Draft</SelectItem>
                                         <SelectItem value="published" className=" hover:bg-gray-800">Published</SelectItem>
+                                        <SelectItem value="scheduled" className=" hover:bg-gray-800">Scheduled</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {values.status === 'scheduled' && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="published_at" className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4" />
+                                        Schedule Date & Time
+                                    </Label>
+                                    <Input
+                                        id="published_at"
+                                        type="datetime-local"
+                                        value={values.published_at}
+                                        onChange={(e) =>
+                                            setValues({
+                                                ...values,
+                                                published_at: e.target.value,
+                                            })
+                                        }
+                                        min={new Date().toISOString().slice(0, 16)}
+                                        required
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Post will be published automatically at the scheduled time.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="rounded-lg p-4 border space-y-4">
