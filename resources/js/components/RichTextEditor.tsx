@@ -161,8 +161,8 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
                     return (
                         <Toggle
                             key={item.title}
-                            pressed={item.isActive()}
-                            onPressedChange={() => item.action()}
+                            pressed={item.isActive?.() ?? false}
+                            onPressedChange={() => item.action?.()}
                             title={item.title}
                             className="h-8 w-8 p-0 data-[state=on]:bg-gray-700 data-[state=on]:text-gray-50 data-[state=off]:text-gray-400 data-[state=off]:hover:bg-gray-700 data-[state=off]:hover:text-gray-50 transition-colors rounded-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-gray-500"
                         >
@@ -174,7 +174,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
 
             <EditorContent
                 editor={editor}
-                className="prose prose-invert max-w-none p-4 min-h-[300px] focus:outline-none"
+                className="prose dark:prose-invert max-w-none p-4 min-h-[300px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[300px]"
             />
         </div>
     );
