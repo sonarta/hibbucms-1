@@ -7,6 +7,7 @@ use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Requests\Post\AutoSavePostRequest;
 use App\Models\Post;
+use App\Models\PostRevision;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Models\Media;
@@ -153,6 +154,9 @@ class PostController extends Controller
 
         $validated['slug'] = Str::slug($validated['title']);
 
+        // Create a revision before updating
+        $post->createRevision();
+
         if ($request->hasFile('featured_image')) {
             try {
                 $media = Media::upload($request->file('featured_image'));
@@ -284,5 +288,59 @@ class PostController extends Controller
                 'message' => 'Failed to save draft: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Get list of revisions for a post.
+     */
+    public function revisions(Post $post)
+    {
+        $revisions = $post->revisions()
+            ->with('user:id,name')
+            ->get()
+            ->map(function ($revision) {
+                return [
+                    'id' => $revision->id,
+                    'revision_number' => $revision->revision_number,
+                    'title' => $revision->title,
+                    'excerpt' => $revision->excerpt,
+                    'content_preview' => Str::limit(strip_tags($revision->content), 200),
+                    'user' => $revision->user?->name ?? 'Unknown',
+                    'created_at' => $revision->created_at->format('d M Y H:i'),
+                    'created_at_diff' => $revision->created_at->diffForHumans(),
+                ];
+            });
+
+        return Inertia::render('Admin/Posts/Revisions', [
+            'post' => [
+                'id' => $post->id,
+                'title' => $post->title,
+            ],
+            'revisions' => $revisions,
+        ]);
+    }
+
+    /**
+     * Restore a post to a specific revision.
+     */
+    public function restoreRevision(Post $post, PostRevision $revision)
+    {
+        // Verify the revision belongs to this post
+        if ($revision->post_id !== $post->id) {
+            return back()->with('error', 'Invalid revision.');
+        }
+
+        // Create a revision of current state before restoring
+        $post->createRevision();
+
+        // Restore the post to the revision state
+        $post->update([
+            'title' => $revision->title,
+            'content' => $revision->content,
+            'excerpt' => $revision->excerpt,
+        ]);
+
+        return redirect()->route('admin.posts.edit', $post)
+            ->with('message', 'Post restored to revision #' . $revision->revision_number);
     }
 }

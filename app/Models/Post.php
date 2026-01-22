@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -98,5 +99,27 @@ class Post extends Model
     {
         $category = $this->category;
         return $category ? collect([$category]) : collect();
+    }
+
+    /**
+     * Get revisions for this post.
+     */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(PostRevision::class)->orderBy('revision_number', 'desc');
+    }
+
+    /**
+     * Create a revision snapshot of the current post state.
+     */
+    public function createRevision(?int $userId = null): PostRevision
+    {
+        return $this->revisions()->create([
+            'user_id' => $userId ?? auth()->id(),
+            'title' => $this->title,
+            'content' => $this->content,
+            'excerpt' => $this->excerpt,
+            'revision_number' => PostRevision::getNextRevisionNumber($this->id),
+        ]);
     }
 }

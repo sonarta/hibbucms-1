@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import { FormEvent, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import RichTextEditor from '@/components/RichTextEditor';
 import MediaPicker from '@/components/MediaPicker';
 import { SaveIndicator } from '@/components/SaveIndicator';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { Loader2 } from 'lucide-react';
+import { Loader2, History } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Category {
@@ -167,11 +167,21 @@ export default function Form({ post, categories, tags, media }: Props) {
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">{post ? 'Edit Post' : 'Create New Post'}</h1>
-                    <SaveIndicator
-                        status={saveStatus}
-                        lastSavedAt={lastSavedAt}
-                        error={saveError}
-                    />
+                    <div className="flex items-center gap-4">
+                        {post && (
+                            <Link href={route('admin.posts.revisions', post.id)}>
+                                <Button variant="outline" size="sm">
+                                    <History className="h-4 w-4 mr-2" />
+                                    Revisions
+                                </Button>
+                            </Link>
+                        )}
+                        <SaveIndicator
+                            status={saveStatus}
+                            lastSavedAt={lastSavedAt}
+                            error={saveError}
+                        />
+                    </div>
                 </div>
 
                 <div className="flex gap-4">

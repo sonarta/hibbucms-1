@@ -70,6 +70,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::post('posts/{post}/unpublish', [PostController::class, 'unpublish'])->name('admin.posts.unpublish');
     Route::post('posts/autosave', [PostController::class, 'autoSave'])->name('admin.posts.autosave');
     Route::post('posts/{post}/autosave', [PostController::class, 'autoSave'])->name('admin.posts.autosave.update');
+    Route::get('posts/{post}/revisions', [PostController::class, 'revisions'])->name('admin.posts.revisions');
+    Route::post('posts/{post}/revisions/{revision}/restore', [PostController::class, 'restoreRevision'])->name('admin.posts.revisions.restore');
 
     // User Routes
     Route::resource('users', UserController::class)->names([
