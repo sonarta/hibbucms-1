@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/select';
 import RichTextEditor from '@/components/RichTextEditor';
 import MediaPicker from '@/components/MediaPicker';
+import { SaveIndicator } from '@/components/SaveIndicator';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -62,6 +64,53 @@ export default function Form({ post, categories, tags, media }: Props) {
     const [selectedMediaId, setSelectedMediaId] = useState<string | undefined>(
         post?.featured_image_id?.toString() || undefined
     );
+
+    // Auto-save hook
+    const { status: saveStatus, lastSavedAt, error: saveError, triggerSave } = useAutoSave(
+        post?.id || null,
+        {
+            debounceMs: 3000,
+            onSuccess: (postId) => {
+                // Update URL if this is a new post that just got an ID
+                if (!post && postId) {
+                    window.history.replaceState({}, '', route('admin.posts.edit', postId));
+                }
+            },
+            onError: (error) => {
+                toast.error(error);
+            },
+        }
+    );
+
+    // Track if content has changed from initial values
+    const initialValuesRef = useRef({
+        title: post?.title || '',
+        content: post?.content || '',
+        excerpt: post?.excerpt || '',
+        category_id: post?.category_id?.toString() || '',
+        tag_ids: post?.tag_ids?.map(id => id.toString()) || [],
+    });
+
+    // Trigger auto-save when values change
+    useEffect(() => {
+        const hasChanged =
+            values.title !== initialValuesRef.current.title ||
+            values.content !== initialValuesRef.current.content ||
+            values.excerpt !== initialValuesRef.current.excerpt ||
+            values.category_id !== initialValuesRef.current.category_id ||
+            JSON.stringify(values.tag_ids) !== JSON.stringify(initialValuesRef.current.tag_ids);
+
+        if (hasChanged) {
+            triggerSave({
+                title: values.title,
+                content: values.content,
+                excerpt: values.excerpt,
+                category_id: values.category_id || undefined,
+                featured_image_id: selectedMediaId,
+                tags: values.tag_ids,
+            });
+        }
+    }, [values, selectedMediaId, triggerSave]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -118,6 +167,11 @@ export default function Form({ post, categories, tags, media }: Props) {
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-bold">{post ? 'Edit Post' : 'Create New Post'}</h1>
+                    <SaveIndicator
+                        status={saveStatus}
+                        lastSavedAt={lastSavedAt}
+                        error={saveError}
+                    />
                 </div>
 
                 <div className="flex gap-4">

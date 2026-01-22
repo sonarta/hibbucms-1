@@ -68,6 +68,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     ]);
     Route::post('posts/{post}/publish', [PostController::class, 'publish'])->name('admin.posts.publish');
     Route::post('posts/{post}/unpublish', [PostController::class, 'unpublish'])->name('admin.posts.unpublish');
+    Route::post('posts/autosave', [PostController::class, 'autoSave'])->name('admin.posts.autosave');
+    Route::post('posts/{post}/autosave', [PostController::class, 'autoSave'])->name('admin.posts.autosave.update');
 
     // User Routes
     Route::resource('users', UserController::class)->names([

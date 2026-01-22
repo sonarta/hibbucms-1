@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
+use App\Http\Requests\Post\AutoSavePostRequest;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Tag;
@@ -209,5 +210,79 @@ class PostController extends Controller
         ]);
 
         return back()->with('message', 'Post unpublished successfully.');
+    }
+
+    /**
+     * Auto-save post content.
+     * Creates a new draft if no post exists, or updates existing post.
+     */
+    public function autoSave(AutoSavePostRequest $request, ?Post $post = null)
+    {
+        $validated = $request->validated();
+
+        try {
+            if ($post) {
+                // Update existing post - only update fields that are provided
+                $updateData = array_filter($validated, fn($value) => $value !== null);
+
+                if (!empty($updateData)) {
+                    $post->update($updateData);
+                }
+
+                if (isset($validated['tags'])) {
+                    $post->tags()->sync($validated['tags']);
+                }
+            } else {
+                // Create new draft post
+                $validated['user_id'] = auth()->id();
+                $validated['status'] = 'draft';
+                $validated['slug'] = Str::slug($validated['title'] ?? 'untitled-' . time());
+
+                // Set default title if not provided
+                if (empty($validated['title'])) {
+                    $validated['title'] = 'Untitled Draft';
+                }
+
+                // Set default content if not provided
+                if (empty($validated['content'])) {
+                    $validated['content'] = '';
+                }
+
+                // Set default category if not provided - required field
+                if (empty($validated['category_id'])) {
+                    $defaultCategory = Category::first();
+                    if (!$defaultCategory) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No categories available. Please create a category first.',
+                        ], 400);
+                    }
+                    $validated['category_id'] = $defaultCategory->id;
+                }
+
+                $post = Post::create($validated);
+
+                if (isset($validated['tags'])) {
+                    $post->tags()->sync($validated['tags']);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'post_id' => $post->id,
+                'saved_at' => now()->toISOString(),
+                'message' => 'Draft saved successfully.',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Auto-save failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'validated' => $validated,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save draft: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
