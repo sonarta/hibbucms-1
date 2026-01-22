@@ -343,4 +343,41 @@ class PostController extends Controller
         return redirect()->route('admin.posts.edit', $post)
             ->with('message', 'Post restored to revision #' . $revision->revision_number);
     }
+    /**
+     * Handle bulk actions for posts.
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:posts,id',
+            'action' => 'required|in:delete,publish,draft',
+        ]);
+
+        $ids = $request->input('ids');
+        $action = $request->input('action');
+        $count = count($ids);
+
+        switch ($action) {
+            case 'delete':
+                Post::whereIn('id', $ids)->delete();
+                $message = "$count post(s) deleted successfully.";
+                break;
+
+            case 'publish':
+                Post::whereIn('id', $ids)->update([
+                    'status' => 'published',
+                    'published_at' => now(),
+                ]);
+                $message = "$count post(s) published successfully.";
+                break;
+
+            case 'draft':
+                Post::whereIn('id', $ids)->update(['status' => 'draft']);
+                $message = "$count post(s) moved to draft successfully.";
+                break;
+        }
+
+        return redirect()->back()->with('message', $message);
+    }
 }

@@ -21,9 +21,11 @@ import {
 } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Plus, ImageIcon, FileText } from 'lucide-react';
+import { Plus, ImageIcon, FileText, Trash2, Archive, CheckCircle, X } from 'lucide-react';
 import ReactDOM from 'react-dom/client';
 import { Pagination } from '@/components/ui/pagination';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 interface Category {
     id: number;
@@ -79,6 +81,8 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status);
     const [category, setCategory] = useState(filters.category);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [isBulkActing, setIsBulkActing] = useState(false);
 
     // Mendapatkan unique categories dari posts
     const uniqueCategories = Array.from(
@@ -111,6 +115,45 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
             route('admin.posts.index'),
             { search, status, category: value },
             { preserveState: true }
+        );
+    };
+
+    const toggleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(posts.data.map((post) => post.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const toggleSelectOne = (id: number, checked: boolean) => {
+        if (checked) {
+            setSelectedIds([...selectedIds, id]);
+        } else {
+            setSelectedIds(selectedIds.filter((selectedId) => selectedId !== id));
+        }
+    };
+
+    const handleBulkAction = (action: 'delete' | 'publish' | 'draft') => {
+        if (!confirm(`Are you sure you want to ${action} ${selectedIds.length} selected post(s)?`)) {
+            return;
+        }
+
+        setIsBulkActing(true);
+        router.post(
+            route('admin.posts.bulk-action'),
+            { ids: selectedIds, action },
+            {
+                onSuccess: () => {
+                    toast.success(`${selectedIds.length} post(s) ${action}ed successfully`);
+                    setSelectedIds([]);
+                    setIsBulkActing(false);
+                },
+                onError: () => {
+                    toast.error('Failed to perform bulk action');
+                    setIsBulkActing(false);
+                },
+            }
         );
     };
 
@@ -179,6 +222,53 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                     </Link>
                 </div>
 
+                {selectedIds.length > 0 && (
+                    <div className="bg-primary/10 border border-primary text-primary rounded-lg p-4 mb-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="font-medium">{selectedIds.length} selected</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedIds([])}
+                                className="h-auto p-0 hover:bg-transparent"
+                            >
+                                <X className="h-4 w-4 ml-1" />
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                             <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleBulkAction('draft')}
+                                disabled={isBulkActing}
+                                className="bg-background"
+                            >
+                                <Archive className="mr-2 h-4 w-4" />
+                                Mark as Draft
+                            </Button>
+                             <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleBulkAction('publish')}
+                                disabled={isBulkActing}
+                                className="bg-background text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-900/20"
+                            >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Publish
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleBulkAction('delete')}
+                                disabled={isBulkActing}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="rounded-lg shadow border p-4 mb-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
@@ -243,6 +333,15 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                         <Table containerClassName="overflow-visible">
                             <TableHeader className="sticky top-[66px] z-10 bg-background/80 backdrop-blur-md shadow-sm">
                                 <TableRow className="hover:bg-transparent">
+                                    <TableHead className="w-[50px]">
+                                        <Checkbox
+                                            checked={
+                                                posts.data.length > 0 &&
+                                                selectedIds.length === posts.data.length
+                                            }
+                                            onCheckedChange={(checked) => toggleSelectAll(checked as boolean)}
+                                        />
+                                    </TableHead>
                                     <TableHead>Title</TableHead>
                                     <TableHead>Category</TableHead>
                                     <TableHead>Tags</TableHead>
@@ -254,7 +353,13 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                             </TableHeader>
                             <TableBody>
                                 {posts.data.map((post) => (
-                                    <TableRow key={post.id}>
+                                    <TableRow key={post.id} className={selectedIds.includes(post.id) ? 'bg-muted/50' : ''}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedIds.includes(post.id)}
+                                                onCheckedChange={(checked) => toggleSelectOne(post.id, checked as boolean)}
+                                            />
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-3">
                                                 <div className="flex-shrink-0 w-16 h-12 rounded-md overflow-hidden">
