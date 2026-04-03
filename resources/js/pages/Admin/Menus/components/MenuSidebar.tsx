@@ -26,19 +26,28 @@ interface Menu {
     location: string;
 }
 
+type MenuFormFields = {
+    name: string;
+    location: string;
+    description: string;
+    is_active: boolean;
+};
+
+type AddableMenuItem = Page | Post | { title: string; url: string };
+
 interface MenuSidebarProps {
     menus: Menu[];
     activeMenu: string;
     setActiveMenu: (id: string) => void;
     pages: Page[];
     posts: Post[];
-    onAddItems: (type: string, items: any[]) => void;
+    onAddItems: (type: string, items: AddableMenuItem[]) => void;
     onCreateMenu: () => void;
     menuData: {
         name: string;
         location: string;
     };
-    setMenuData: (key: string, value: any) => void;
+    setMenuData: <K extends keyof MenuFormFields>(key: K, value: MenuFormFields[K]) => void;
     isProcessing: boolean;
 }
 

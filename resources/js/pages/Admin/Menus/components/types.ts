@@ -17,3 +17,17 @@ export interface Menu {
     is_active: boolean;
     items: MenuItemData[];
 }
+
+/** Partial update payload for menu items (form fields + optional nested children from drag-and-drop). */
+export type MenuItemUpdatePayload = Partial<
+    Pick<MenuItemData, 'title' | 'url' | 'target' | 'type' | 'order' | 'parent_id'>
+> & {
+    children?: MenuItemData[];
+};
+
+/** Sent to reorder endpoint after drag-and-drop. */
+export interface MenuReorderPayload {
+    id: string | number;
+    order: number;
+    parent_id?: string | number | null;
+}

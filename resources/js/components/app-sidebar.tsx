@@ -14,7 +14,7 @@ function can(permissions: string[], name: string): boolean {
 
 export function AppSidebar() {
     const { auth } = usePage<SharedData>().props;
-    const permissions = auth.permissions ?? [];
+    const permissions = useMemo(() => auth.permissions ?? [], [auth.permissions]);
 
     const { mainNavItems, contentNavItems, adminNavItems } = useMemo(() => {
         const main: NavItem[] = [];

@@ -7,7 +7,7 @@ import AppLayout from "@/layouts/app-layout"
 import { Head, useForm, router } from "@inertiajs/react"
 import MenuSidebar from "./components/MenuSidebar"
 import MenuTree from "./components/MenuTree"
-import { Menu, MenuItemData } from "./components/types"
+import { Menu, MenuItemData, MenuItemUpdatePayload, MenuReorderPayload } from "./components/types"
 
 interface Page {
   id: string | number;
@@ -59,7 +59,7 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
         is_active: true
       })
     }
-  }, [initialMenus, activeMenu]) // Removed setData dependency
+  }, [initialMenus, activeMenu, setData])
 
   const handleCreateMenu = () => {
     post(route('admin.menus.store'), {
@@ -75,7 +75,7 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     put(route('admin.menus.update', activeMenu))
   }
 
-  const handleAddItems = (type: string, items: any[]) => {
+  const handleAddItems = (type: string, items: (Page | Post | { title: string; url: string })[]) => {
     if (!activeMenu) {
       alert("Please select or create a menu first.")
       return
@@ -86,14 +86,14 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     }
 
     const payload = items.map((item) => {
-      const url =
-        type === 'custom'
-          ? item.url
-          : type === 'page'
-            ? `/pages/${item.slug}`
-            : type === 'post'
-              ? `/posts/${item.slug}`
-              : '/'
+      let url = '/'
+      if (type === 'custom' && 'url' in item) {
+        url = item.url
+      } else if (type === 'page' && 'slug' in item) {
+        url = `/pages/${item.slug}`
+      } else if (type === 'post' && 'slug' in item) {
+        url = `/posts/${item.slug}`
+      }
       const itemType =
         type === 'custom'
           ? 'custom'
@@ -113,7 +113,7 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     router.post(route('admin.menus.items.bulk-store', activeMenu), { items: payload }, { preserveScroll: true })
   }
 
-  const handleUpdateMenuItem = (id: string | number, itemData: any) => {
+  const handleUpdateMenuItem = (id: string | number, itemData: MenuItemUpdatePayload) => {
     // If updating children, we don't send that to 'update' endpoint, that's handled by 'reorder' usually.
     // But here we might receive 'children' from MenuItem component local state update.
     // If 'children' is in itemData, we IGNORE it for the 'update' route (which is for properties like title/url).
@@ -159,9 +159,12 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     };
     setMenuItems(prev => updateRecursive(prev));
 
+    const updateFields = { ...itemData };
+    delete updateFields.children;
+
     router.put(route('admin.menus.items.update', id), {
-      ...itemData,
-      type: item.type // required by backend validation often
+      ...updateFields,
+      type: item.type,
     }, {
       preserveScroll: true
     });
@@ -185,11 +188,14 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
     })
   }
 
-  const handleReorder = (itemsToUpdate: any[]) => {
+  const handleReorder = (itemsToUpdate: MenuReorderPayload[]) => {
     // This is called when Drag & Drop finishes or Structure changes
-    router.post(route('admin.menus.items.reorder', activeMenu), {
-      items: itemsToUpdate
-    }, {
+    const items = itemsToUpdate.map((row) => ({
+      id: row.id,
+      order: row.order,
+      parent_id: row.parent_id ?? null,
+    }));
+    router.post(route('admin.menus.items.reorder', activeMenu), { items }, {
       preserveScroll: true
     });
   }

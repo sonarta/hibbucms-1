@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ReactSortable } from "react-sortablejs";
-import { MenuItemData } from "./types";
+import { type MenuItemData, type MenuItemUpdatePayload, type MenuReorderPayload } from "./types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,19 +19,19 @@ interface MenuTreeProps {
     items: MenuItemData[];
     setItems: (items: MenuItemData[]) => void;
     parentId?: string | number | null;
-    onUpdateItem: (id: string | number, data: any) => void;
+    onUpdateItem: (id: string | number, data: MenuItemUpdatePayload) => void;
     onRemoveItem: (id: string | number) => void;
     activeMenu: string | number;
-    onReorder: (items: any[]) => void;
+    onReorder: (items: MenuReorderPayload[]) => void;
     className?: string;
 }
 
 interface MenuItemProps {
     item: MenuItemData;
-    onUpdate: (id: string | number, data: any) => void;
+    onUpdate: (id: string | number, data: MenuItemUpdatePayload) => void;
     onRemove: (id: string | number) => void;
     activeMenu: string | number;
-    onReorder: (items: any[]) => void;
+    onReorder: (items: MenuReorderPayload[]) => void;
 }
 
 function MenuItem({ item, onUpdate, onRemove, activeMenu, onReorder }: MenuItemProps) {

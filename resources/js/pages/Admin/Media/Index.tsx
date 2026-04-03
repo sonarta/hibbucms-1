@@ -6,8 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
 import { useDropzone } from 'react-dropzone';
 import { Loader2, Image as ImageIcon, File, FileText, Film, Music, Plus, Folder, FolderPlus, ChevronRight } from 'lucide-react';
 
@@ -63,7 +61,6 @@ interface Props {
 export default function Index({ media, folders, allFolders, currentFolder, breadcrumbs, filters }: Props) {
     const [uploading, setUploading] = useState(false);
     const [search, setSearch] = useState(filters.search || '');
-    const [type, setType] = useState(filters.type || '');
     const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
 
@@ -131,15 +128,7 @@ export default function Index({ media, folders, allFolders, currentFolder, bread
 
     const handleSearch = (value: string) => {
         setSearch(value);
-        router.get(route('admin.media.index'), { search: value, type, folder_id: currentFolder?.id }, {
-            preserveState: true,
-            replace: true,
-        });
-    };
-
-    const handleTypeFilter = (value: string) => {
-        setType(value);
-        router.get(route('admin.media.index'), { search, type: value, folder_id: currentFolder?.id }, {
+        router.get(route('admin.media.index'), { search: value, type: filters.type, folder_id: currentFolder?.id }, {
             preserveState: true,
             replace: true,
         });
@@ -155,14 +144,6 @@ export default function Index({ media, folders, allFolders, currentFolder, bread
                 setNewFolderName('');
             }
         });
-    };
-
-    const handleDeleteFolder = (id: number) => {
-        if (confirm('Are you sure you want to delete this folder? All contents will be moved to the root/parent folder.')) {
-            router.delete(route('admin.media.folders.destroy', id), {
-                preserveScroll: true
-            });
-        }
     };
 
     // Selection Handlers
@@ -550,7 +531,7 @@ export default function Index({ media, folders, allFolders, currentFolder, bread
                                         variant={page === media.current_page ? 'default' : 'outline'}
                                         size="sm"
                                         onClick={() =>
-                                            router.get(route('admin.media.index'), { page, search, type, folder_id: currentFolder?.id }, { preserveState: true })
+                                            router.get(route('admin.media.index'), { page, search, type: filters.type, folder_id: currentFolder?.id }, { preserveState: true })
                                         }
                                     >
                                         {page}
