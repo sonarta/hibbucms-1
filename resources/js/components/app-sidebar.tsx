@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem } from '@/types';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, File, FileText, Settings, Users, Shield, Image, Paintbrush, AlignJustify, Puzzle } from 'lucide-react';
+import { LayoutGrid, File, FileText, Settings, Users, Shield, Image, Paintbrush, AlignJustify, Puzzle, ScrollText } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 
@@ -80,6 +80,13 @@ export function AppSidebar() {
                 title: 'Roles',
                 href: route('admin.roles.index'),
                 icon: Shield,
+            });
+        }
+        if (can(permissions, 'view audit log')) {
+            admin.push({
+                title: 'Audit log',
+                href: route('admin.audit-log.index'),
+                icon: ScrollText,
             });
         }
         if (can(permissions, 'manage themes')) {

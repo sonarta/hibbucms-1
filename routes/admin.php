@@ -1,19 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\PostController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\MenuController;
-use App\Http\Controllers\Admin\ThemeController;
-use App\Http\Controllers\Admin\Settings\SettingsController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\Settings\PasswordController;
 use App\Http\Controllers\Admin\Settings\ProfileController;
+use App\Http\Controllers\Admin\Settings\SettingsController;
+use App\Http\Controllers\Admin\Settings\TwoFactorController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\ThemeController;
+use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/admin', function () {
@@ -22,6 +24,10 @@ Route::get('/admin', function () {
 
 Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::get('audit-log', [AuditLogController::class, 'index'])
+        ->middleware('permission:view audit log')
+        ->name('admin.audit-log.index');
 
     // Media Routes
     Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
@@ -143,7 +149,6 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::delete('menus/items/{menuItem}', [MenuController::class, 'destroyMenuItem'])->name('admin.menus.items.destroy');
     Route::post('menus/{menu}/reorder', [MenuController::class, 'reorderMenuItems'])->name('admin.menus.items.reorder');
 
-
     // Settings Routes
     Route::prefix('settings')->group(function () {
         Route::get('/', function () {
@@ -152,6 +157,13 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
         Route::get('/general', [SettingsController::class, 'general'])->name('admin.settings.general');
         Route::get('/seo', [SettingsController::class, 'seo'])->name('admin.settings.seo');
         Route::post('/cache/clear', [SettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
+
+        Route::get('/security', [TwoFactorController::class, 'edit'])->name('admin.settings.security');
+        Route::post('/two-factor/start', [TwoFactorController::class, 'start'])->name('admin.settings.two-factor.start');
+        Route::post('/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('admin.settings.two-factor.confirm');
+        Route::delete('/two-factor', [TwoFactorController::class, 'destroy'])->name('admin.settings.two-factor.destroy');
+        Route::post('/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('admin.settings.two-factor.recovery');
+        Route::post('/two-factor/cancel', [TwoFactorController::class, 'cancelSetup'])->name('admin.settings.two-factor.cancel');
 
         // Route::redirect('settings', 'admin/settings/profile');
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -168,7 +180,5 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
             return Inertia::render('Admin/Settings/Appearance');
         })->name('appearance');
     });
-
-
 
 });

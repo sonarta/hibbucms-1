@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Page extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $fillable = [
         'title',
@@ -25,6 +28,15 @@ class Page extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'slug', 'status', 'user_id'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('page');
     }
 
     protected static function boot()

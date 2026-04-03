@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Post extends Model
 {
-    use SoftDeletes, HasFactory;
+    use HasFactory;
+    use LogsActivity;
+    use SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -31,6 +35,15 @@ class Post extends Model
         'published_at' => 'datetime',
     ];
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'slug', 'status', 'user_id', 'category_id'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges()
+            ->useLogName('post');
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -38,7 +51,7 @@ class Post extends Model
         static::creating(function ($post) {
             $post->slug = $post->slug ?? Str::slug($post->title);
 
-            if ($post->status === 'published' && !$post->published_at) {
+            if ($post->status === 'published' && ! $post->published_at) {
                 $post->published_at = now();
             }
         });
@@ -106,6 +119,7 @@ class Post extends Model
     public function getCategoriesAttribute()
     {
         $category = $this->category;
+
         return $category ? collect([$category]) : collect();
     }
 

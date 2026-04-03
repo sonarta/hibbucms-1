@@ -33,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'content.preview' => \App\Http\Middleware\EnsureContentPreviewAllowed::class,
+            'two_factor.pending' => \App\Http\Middleware\EnsurePendingTwoFactorLogin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -42,6 +42,8 @@ HibbuCMS is a modern and open-source Content Management System (CMS) built with 
 - 👥 **User Management**
   - Role-Based Access Control (RBAC)
   - User authentication and authorization
+  - Optional two-factor authentication (TOTP authenticator apps) under **Settings → Security**
+  - Activity / audit log for sign-ins and content changes (**Audit log** in the admin sidebar; requires `view audit log`)
   - Email verification
   - Permission management
 

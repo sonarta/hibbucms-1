@@ -29,8 +29,16 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $user = $request->resolveUser();
 
+        if ($user->hasTwoFactorEnabled()) {
+            $request->session()->put('two_factor_login.id', $user->id);
+            $request->session()->put('two_factor_login.remember', $request->boolean('remember'));
+
+            return redirect()->route('two-factor.login');
+        }
+
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard', absolute: false));

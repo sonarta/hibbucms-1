@@ -52,6 +52,9 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'manage themes', 'group' => 'Administration'],
             ['name' => 'manage plugins', 'group' => 'Administration'],
             ['name' => 'manage roles', 'group' => 'Administration'],
+
+            // Security & compliance
+            ['name' => 'view audit log', 'group' => 'Security'],
         ];
 
         foreach ($permissions as $permission) {
@@ -73,6 +76,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view media', 'create media', 'edit media', 'delete media',
             'manage settings',
             'view dashboard', 'manage menus', 'manage themes', 'manage plugins', 'manage roles',
+            'view audit log',
         ]);
 
         $role = Role::create(['name' => 'Editor']);

@@ -20,6 +20,10 @@ const sidebarNavItems: NavItem[] = [
         href: route('profile.edit')
     },
     {
+        title: 'Security',
+        href: route('admin.settings.security')
+    },
+    {
         title: 'Password',
         href: route('password.edit')
     },
@@ -50,7 +54,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                             const itemPath = item.href.split('/').pop() || '';
                             const isActive = url.endsWith(itemPath) ||
                                            (url.endsWith('settings') && item.title === 'General') ||
-                                           (url.endsWith('settings/general') && item.title === 'General');
+                                           (url.endsWith('settings/general') && item.title === 'General') ||
+                                           (item.title === 'Security' && url.includes('/settings/security'));
 
                             return (
                                 <Button
