@@ -101,6 +101,12 @@ Tanpa baris di atas, post terjadwal tidak akan pernah terbit sampai Anda menjala
 
 **Lokal:** saat development, jalankan `php artisan schedule:work` di terminal terpisah (atau cron di WSL) agar jadwal diuji tanpa deploy.
 
+## 📷 Media: image variants & S3 / CDN
+
+- **Varian gambar:** untuk gambar raster (bukan SVG/GIF), setelah unggah HibbuCMS membuat preset `thumb`, `medium`, dan `large` (lebar maks. 300 / 768 / 1920 px) memakai [Intervention Image](https://image.intervention.io/). Metadata disimpan di kolom `variants`; URL lengkap tersedia di `variant_urls` pada API media admin. Matikan dengan `MEDIA_IMAGE_VARIANTS=false` atau sesuaikan preset di `config/media.php`.
+- **Disk penyimpanan:** set `MEDIA_DISK=public` (default, `storage/app/public` + symlink `public/storage`) atau `MEDIA_DISK=s3` setelah mengisi `AWS_*` di `.env` dan memastikan bucket serta IAM sudah benar.
+- **CDN / URL publik:** untuk disk `public`, set `MEDIA_URL` ke basis URL aset Anda (mis. `https://cdn.example.com/storage`) agar `Storage::url()` mengarah ke CDN. Untuk S3, gunakan `AWS_URL` (mis. CloudFront) sesuai [dokumentasi Laravel filesystem](https://laravel.com/docs/filesystem).
+
 ## 🤝 Contribute
 
 We greatly appreciate contributions from the community! HibbuCMS is an open-source project, and we welcome contributions in various forms:

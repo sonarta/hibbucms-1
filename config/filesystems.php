@@ -41,7 +41,8 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Optional CDN: set MEDIA_URL to your CloudFront / asset host (must include /storage if files are served there)
+            'url' => env('MEDIA_URL', env('APP_URL').'/storage'),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Media\MediaVariantService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -27,15 +28,17 @@ class Media extends Model
         'file_hash',
         'size',
         'custom_properties',
+        'variants',
     ];
 
     protected $casts = [
         'custom_properties' => 'array',
+        'variants' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    protected $appends = ['url'];
+    protected $appends = ['url', 'variant_urls'];
 
     protected $with = ['user'];
 
@@ -66,6 +69,32 @@ class Media extends Model
         return $this->path ? Storage::disk($this->disk)->url($this->path) : '';
     }
 
+    /**
+     * Absolute URLs for generated variants (thumb, medium, large), keyed by preset name.
+     *
+     * @return array<string, string>
+     */
+    public function getVariantUrlsAttribute(): array
+    {
+        if (! is_array($this->variants)) {
+            return [];
+        }
+
+        $urls = [];
+        foreach ($this->variants as $key => $meta) {
+            if (! empty($meta['path'])) {
+                $urls[$key] = Storage::disk($this->disk)->url($meta['path']);
+            }
+        }
+
+        return $urls;
+    }
+
+    public function variantUrl(string $preset): ?string
+    {
+        return $this->variant_urls[$preset] ?? null;
+    }
+
     public function getDimensionsAttribute(): ?array
     {
         if (!Str::startsWith($this->mime_type, 'image/')) {
@@ -93,12 +122,16 @@ class Media extends Model
 
     public function delete()
     {
+        app(MediaVariantService::class)->deleteVariantFiles($this->variants, $this->disk);
         Storage::disk($this->disk)->delete($this->path);
+
         return parent::delete();
     }
 
-    public static function upload($file, $directory = 'uploads', $disk = 'public'): self
+    public static function upload($file, $directory = 'uploads', ?string $disk = null): self
     {
+        $disk = $disk ?? config('media.disk', 'public');
+
         try {
             $hash = md5_file($file->path());
             $extension = $file->getClientOriginalExtension();
@@ -164,6 +197,16 @@ class Media extends Model
 
             // Log creation
             \Log::info('Media model created:', $media->toArray());
+
+            try {
+                app(MediaVariantService::class)->generate($media);
+                $media->refresh();
+            } catch (\Throwable $e) {
+                \Log::warning('Media variants generation failed', [
+                    'media_id' => $media->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
 
             // Ensure user relation is loaded
             return $media->load('user');

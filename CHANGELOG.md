@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Media:** varian gambar (thumb / medium / large) via Intervention Image, kolom `variants` pada `media`, `MEDIA_DISK` / `MEDIA_URL` / `MEDIA_IMAGE_VARIANTS`, paket `league/flysystem-aws-s3-v3` untuk disk S3; `tests/Feature/MediaVariantsTest.php` (membutuhkan ekstensi PHP `gd`)
 - `ThemeController` dispatches `theme.before_activate`, `theme.after_activate`, `theme.before_delete`, and `theme.after_delete`; `tests/Feature/Admin/ThemeLifecycleHooksTest.php`
 - Documentation: `docs/hooks-and-templates.md` expanded with registration order, full hook tables matching core, real template hierarchy from `TemplateHierarchy`, Blade-level filters, and theme lifecycle hooks
 - **Editor workflow & preview:** status `pending_review` untuk post dan halaman; pratinjau tema di `/preview/post/{post}` dan `/preview/page/{page}` (login + permission `view content`, atau tautan bertanda tangan 72 jam dari admin); banner pratinjau di tema default; tombol Pratinjau / salin tautan di form post & halaman

@@ -58,6 +58,7 @@ class MediaController extends Controller
                 'id' => $item->id,
                 'name' => $item->name,
                 'url' => $item->url,
+                'variant_urls' => $item->variant_urls,
                 'mime_type' => $item->mime_type,
                 'size' => $item->human_readable_size,
                 'dimensions' => $item->dimensions,
@@ -150,6 +151,7 @@ class MediaController extends Controller
                 'id' => $media->id,
                 'name' => $media->name,
                 'url' => $media->url,
+                'variant_urls' => $media->variant_urls,
                 'mime_type' => $media->mime_type,
                 'size' => $media->human_readable_size,
             ];
@@ -191,6 +193,7 @@ class MediaController extends Controller
                 'id' => $media->id,
                 'name' => $media->name ?: $media->file_name,
                 'url' => $media->url,
+                'variant_urls' => $media->variant_urls,
                 'mime_type' => $media->mime_type,
                 'size' => $media->human_readable_size,
                 'dimensions' => $media->dimensions,
