@@ -12,6 +12,7 @@ use App\Models\Post;
 use App\Models\PostRevision;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -144,6 +145,14 @@ class PostController extends Controller
             'categories' => $categories,
             'tags' => $tags,
             'media' => $media,
+            'preview' => [
+                'url' => URL::route('preview.post', $post),
+                'signed_url' => URL::temporarySignedRoute(
+                    'preview.post',
+                    now()->addHours(72),
+                    ['post' => $post->id]
+                ),
+            ],
         ]);
     }
 

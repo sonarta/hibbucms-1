@@ -7,6 +7,7 @@ use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class PageController extends Controller
@@ -68,7 +69,7 @@ class PageController extends Controller
             'featured_image' => 'nullable|image|max:2048',
             'meta_description' => 'nullable|max:255',
             'meta_keywords' => 'nullable|max:255',
-            'status' => 'required|in:draft,published',
+            'status' => 'required|in:draft,published,pending_review',
             'order' => 'nullable|integer',
         ]);
 
@@ -104,7 +105,15 @@ class PageController extends Controller
     public function edit(Page $page)
     {
         return Inertia::render('Admin/Pages/Edit', [
-            'page' => $page
+            'page' => $page,
+            'preview' => [
+                'url' => URL::route('preview.page', $page),
+                'signed_url' => URL::temporarySignedRoute(
+                    'preview.page',
+                    now()->addHours(72),
+                    ['page' => $page->id]
+                ),
+            ],
         ]);
     }
 
@@ -119,7 +128,7 @@ class PageController extends Controller
             'featured_image' => 'nullable|image|max:2048',
             'meta_description' => 'nullable|max:255',
             'meta_keywords' => 'nullable|max:255',
-            'status' => 'required|in:draft,published',
+            'status' => 'required|in:draft,published,pending_review',
             'order' => 'nullable|integer',
         ]);
 

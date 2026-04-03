@@ -9,7 +9,6 @@ use App\Models\Page;
 use App\Services\TemplateHierarchy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
-use Inertia\Inertia;
 
 class FrontendController extends Controller
 {
@@ -351,5 +350,118 @@ class FrontendController extends Controller
         // If no specific template found, return 404
         // This ensures only pages with actual templates are displayed
         abort(404, "Static page not found: {$page}");
+    }
+
+    /**
+     * Preview a post (draft, scheduled, pending_review, or published) using theme templates.
+     */
+    public function previewPost(Post $post)
+    {
+        $post->load(['category', 'tags', 'user', 'featuredImage']);
+        $postModel = $post;
+        $postModel->setAttribute('featured_image', $postModel->featuredImage?->url);
+
+        $previousPost = Post::where('status', 'published')
+            ->where('published_at', '<', $postModel->published_at ?? now())
+            ->orderBy('published_at', 'desc')
+            ->first();
+
+        $nextPost = Post::where('status', 'published')
+            ->where('published_at', '>', $postModel->published_at ?? now())
+            ->orderBy('published_at', 'asc')
+            ->first();
+
+        $relatedPosts = Post::with(['category', 'tags', 'user'])
+            ->where('status', 'published')
+            ->where('id', '!=', $postModel->id)
+            ->where(function ($query) use ($postModel) {
+                return $query->where('category_id', $postModel->category_id)
+                    ->orWhereHas('tags', function ($q) use ($postModel) {
+                        $q->whereIn('id', $postModel->tags->pluck('id'));
+                    });
+            });
+
+        $relatedPosts = apply_filters('related_posts_query', $relatedPosts, $postModel);
+        $relatedPosts = $relatedPosts->latest('published_at')
+            ->take(apply_filters('related_posts_count', 3))
+            ->get();
+
+        $categories = Category::withCount(['posts' => function ($query) {
+            $query->where('status', 'published');
+        }])->get();
+
+        $recentPosts = Post::with(['category', 'user'])
+            ->where('status', 'published')
+            ->where('id', '!=', $postModel->id)
+            ->latest('published_at')
+            ->take(5)
+            ->get();
+
+        $popularTags = Tag::withCount(['posts' => function ($query) {
+            $query->where('status', 'published');
+        }])->orderBy('posts_count', 'desc')
+            ->take(10)
+            ->get();
+
+        do_action('before_single_post', $postModel, $relatedPosts);
+
+        $data = [
+            'post' => $postModel,
+            'relatedPosts' => $relatedPosts,
+            'previousPost' => $previousPost,
+            'nextPost' => $nextPost,
+            'categories' => $categories,
+            'recentPosts' => $recentPosts,
+            'popularTags' => $popularTags,
+            'is_preview' => true,
+        ];
+
+        $data = apply_filters('single_post_data', $data);
+
+        $templates = TemplateHierarchy::getSingleTemplates($postModel->slug);
+        $template = TemplateHierarchy::locateTemplate($templates, app('theme'));
+
+        if (! $template) {
+            return view('theme::pages.post', $data);
+        }
+
+        return view($template, $data);
+    }
+
+    /**
+     * Preview a page (draft, pending_review, or published) using theme templates.
+     */
+    public function previewPage(Page $page)
+    {
+        $pageModel = $page;
+
+        do_action('page_found', $pageModel);
+        do_action('before_page', $pageModel);
+
+        $data = [
+            'page' => $pageModel,
+            'is_preview' => true,
+        ];
+
+        $data = apply_filters('page_data', $data);
+
+        $customTemplate = $pageModel->template ?? null;
+
+        if ($customTemplate) {
+            $customTemplatePath = "theme::templates.{$customTemplate}";
+
+            if (View::exists($customTemplatePath)) {
+                return view($customTemplatePath, $data);
+            }
+        }
+
+        $templates = TemplateHierarchy::getPageTemplates($pageModel->slug);
+        $template = TemplateHierarchy::locateTemplate($templates, app('theme'));
+
+        if (! $template) {
+            return view('theme::pages.page', $data);
+        }
+
+        return view($template, $data);
     }
 }

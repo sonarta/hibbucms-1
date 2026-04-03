@@ -49,6 +49,14 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Theme compatibility: some templates use $post->author.
+     */
+    public function getAuthorAttribute(): ?User
+    {
+        return $this->user;
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

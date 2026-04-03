@@ -5,6 +5,11 @@
 @section('meta_keywords', $post->tags->pluck('name')->join(', '))
 
 @section('content')
+    @if(!empty($is_preview))
+        <div class="alert alert-warning text-center rounded-0 mb-0 border-0" role="alert">
+            {{ __('posts.preview_banner') }}
+        </div>
+    @endif
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto">
@@ -15,7 +20,7 @@
                     <div class="d-flex align-items-center text-muted mb-4">
                         <span class="me-3">
                             <i class="bi bi-calendar me-1"></i>
-                            {{ $post->published_at->format('d M Y') }}
+                            {{ ($post->published_at ?? $post->created_at)->format('d M Y') }}
                         </span>
 
                         {{-- Reading Time Hook --}}

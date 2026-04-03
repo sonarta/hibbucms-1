@@ -11,9 +11,13 @@ interface Props {
         content: string;
         featured_image: string;
         featured_image_url?: string;
-        status: 'draft' | 'published';
+        status: 'draft' | 'published' | 'scheduled' | 'pending_review';
         category_id: number;
         tag_ids: number[];
+    };
+    preview: {
+        url: string;
+        signed_url: string;
     };
     categories: {
         id: number;
@@ -44,12 +48,12 @@ const breadcrumbs = [
         title: 'Edit',
     },
 ];
-export default function Edit({ post, categories, tags, media }: Props) {
+export default function Edit({ post, categories, tags, media, preview }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Edit Post" />
             <div className="p-4">
-                <Form post={post} categories={categories} tags={tags} media={media} />
+                <Form post={post} categories={categories} tags={tags} media={media} preview={preview} />
             </div>
         </AppLayout>
     );

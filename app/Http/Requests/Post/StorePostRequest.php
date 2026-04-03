@@ -28,7 +28,7 @@ class StorePostRequest extends FormRequest
             'category_id' => 'required|exists:categories,id',
             'featured_image' => 'nullable|file|image|max:10240',
             'featured_image_id' => 'nullable|exists:media,id',
-            'status' => 'required|in:draft,published,scheduled',
+            'status' => 'required|in:draft,published,scheduled,pending_review',
             'published_at' => 'nullable|required_if:status,scheduled|date',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',

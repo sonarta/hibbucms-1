@@ -1,4 +1,4 @@
-import { router, Link } from '@inertiajs/react';
+import { router, Link, usePage } from '@inertiajs/react';
 import { FormEvent, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,8 +15,9 @@ import RichTextEditor from '@/components/RichTextEditor';
 import MediaPicker from '@/components/MediaPicker';
 import { SaveIndicator } from '@/components/SaveIndicator';
 import { useAutoSave } from '@/hooks/useAutoSave';
-import { Loader2, History, Calendar } from 'lucide-react';
+import { Loader2, History, Calendar, Eye, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { SharedData } from '@/types';
 
 interface Category {
     id: number;
@@ -37,7 +38,7 @@ interface Props {
         excerpt: string;
         content: string;
         featured_image: string;
-        status: 'draft' | 'published' | 'scheduled';
+        status: 'draft' | 'published' | 'scheduled' | 'pending_review';
         category_id: number;
         tag_ids: number[];
         featured_image_url?: string;
@@ -46,17 +47,23 @@ interface Props {
     categories: Category[];
     tags: Tag[];
     media: { id: number; name: string; url?: string }[];
+    preview?: {
+        url: string;
+        signed_url: string;
+    };
 }
 
 
-export default function Form({ post, categories, tags, media }: Props) {
+export default function Form({ post, categories, tags, media, preview }: Props) {
+    const { translations } = usePage<SharedData>().props;
+    const tp = translations.posts;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [values, setValues] = useState({
         title: post?.title || '',
         excerpt: post?.excerpt || '',
         content: post?.content || '',
         featured_image: null as File | null,
-        status: (post?.status || 'draft') as 'draft' | 'published' | 'scheduled',
+        status: (post?.status || 'draft') as 'draft' | 'published' | 'scheduled' | 'pending_review',
         category_id: post?.category_id?.toString() || '',
         tag_ids: post?.tag_ids?.map(id => id.toString()) || [],
         published_at: '',
@@ -244,39 +251,87 @@ export default function Form({ post, categories, tags, media }: Props) {
                     {/* Sidebar */}
                     <div className="w-80 space-y-4">
                         <div className="rounded-lg p-4 border space-y-4">
-                            <div className="flex justify-between items-center">
-                                <Button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleSubmit(e as unknown as FormEvent);
-                                    }}
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    {post ? 'Update Post' : 'Create Post'}
-                                </Button>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-wrap justify-between items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleSubmit(e as unknown as FormEvent);
+                                        }}
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {post ? 'Update Post' : 'Create Post'}
+                                    </Button>
 
-                                <Select
-                                    value={values.status}
-                                    onValueChange={(value: 'draft' | 'published' | 'scheduled') =>
-                                        setValues({
-                                            ...values,
-                                            status: value,
-                                            // Clear published_at if not scheduled
-                                            published_at: value !== 'scheduled' ? '' : values.published_at,
-                                        })
-                                    }
-                                >
-                                    <SelectTrigger className="w-32 ">
-                                        <SelectValue placeholder="Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="draft" className=" hover:bg-gray-800">Draft</SelectItem>
-                                        <SelectItem value="published" className=" hover:bg-gray-800">Published</SelectItem>
-                                        <SelectItem value="scheduled" className=" hover:bg-gray-800">Scheduled</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                    <Select
+                                        value={values.status}
+                                        onValueChange={(
+                                            value: 'draft' | 'published' | 'scheduled' | 'pending_review'
+                                        ) =>
+                                            setValues({
+                                                ...values,
+                                                status: value,
+                                                published_at: value !== 'scheduled' ? '' : values.published_at,
+                                            })
+                                        }
+                                    >
+                                        <SelectTrigger className="w-[11rem]">
+                                            <SelectValue placeholder="Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="draft" className=" hover:bg-gray-800">
+                                                Draft
+                                            </SelectItem>
+                                            <SelectItem
+                                                value="pending_review"
+                                                className=" hover:bg-gray-800"
+                                            >
+                                                {tp.status_pending_review ?? 'Pending review'}
+                                            </SelectItem>
+                                            <SelectItem value="published" className=" hover:bg-gray-800">
+                                                Published
+                                            </SelectItem>
+                                            <SelectItem value="scheduled" className=" hover:bg-gray-800">
+                                                Scheduled
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {preview && (
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-1"
+                                            onClick={() => window.open(preview.url, '_blank', 'noopener,noreferrer')}
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                            {tp.preview ?? 'Preview'}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            size="sm"
+                                            className="gap-1"
+                                            onClick={async () => {
+                                                try {
+                                                    await navigator.clipboard.writeText(preview.signed_url);
+                                                    toast.success(
+                                                        tp.preview_link_copied ?? 'Preview link copied'
+                                                    );
+                                                } catch {
+                                                    toast.error('Could not copy link');
+                                                }
+                                            }}
+                                        >
+                                            <Link2 className="h-4 w-4" />
+                                            {tp.copy_preview_link ?? 'Copy preview link'}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             {values.status === 'scheduled' && (

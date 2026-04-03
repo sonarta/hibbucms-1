@@ -6,11 +6,28 @@ use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Middleware\EnsureContentPreviewAllowed;
 
 // Frontend Routes
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/feed.xml', [FeedController::class, 'rss'])->name('feed.rss');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+Route::get('/preview/post/{post}', [FrontendController::class, 'previewPost'])
+    ->name('preview.post')
+    ->middleware(EnsureContentPreviewAllowed::class);
+Route::get('/preview/page/{page}', [FrontendController::class, 'previewPage'])
+    ->name('preview.page')
+    ->middleware(EnsureContentPreviewAllowed::class);
+
+Route::post('/locale/{locale}', function (string $locale) {
+    if (! in_array($locale, ['en', 'id'], true)) {
+        abort(400);
+    }
+    session(['locale' => $locale]);
+
+    return back();
+})->name('locale.switch');
 Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog/{slug}', [FrontendController::class, 'post'])->name('blog.post');
 

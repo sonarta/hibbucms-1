@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Editor workflow & preview:** status `pending_review` untuk post dan halaman; pratinjau tema di `/preview/post/{post}` dan `/preview/page/{page}` (login + permission `view content`, atau tautan bertanda tangan 72 jam dari admin); banner pratinjau di tema default; tombol Pratinjau / salin tautan di form post & halaman
+- **i18n (fondasi):** locale default `en`, file bahasa `lang/id` & `lang/en` untuk `posts` dan `common`, middleware `SetLocale`, pemilih bahasa (EN/ID) di header admin, `POST /locale/{locale}`, serta `locale` + `translations` di Inertia
+- `doctrine/dbal` untuk migrasi yang mengubah kolom `status` (termasuk dukungan SQLite di pengujian)
+- `tests/Feature/ContentPreviewAndWorkflowTest.php`
 - Laravel Sanctum (`personal_access_tokens`), `HasApiTokens` on `User`, and public read-only JSON API: `GET /api/v1/posts`, `GET /api/v1/posts/{slug}` (optional `include_content=1` for full HTML body)
 - RSS 2.0 feed at `/feed.xml` and XML sitemap at `/sitemap.xml` (home, blog index, published posts and pages)
 - `tests/Feature/PublicApiAndFeedsTest.php` for API, feed, and sitemap
@@ -19,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comment reminders in `.env.example` and `routes/console.php` about the Laravel scheduler
 
 ### Changed
+- `.env.example`: `APP_LOCALE=en` sebagai default aplikasi
 - `SettingsSeeder`: removed unused `comments_enabled` key (no backend comments feature); default theme single post template no longer renders an empty comments placeholder
 - `RoleAndPermissionSeeder`: media permissions now use `create media` and `edit media` (replacing `upload media`); role assignments updated accordingly
 - `MediaController`: permission middleware mapped to real actions (`download`, `storeFolder`, `move`, `bulkDestroy`, etc.)

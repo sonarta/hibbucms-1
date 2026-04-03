@@ -7,6 +7,11 @@ Description: Custom template for single post page
 
 @section('content')
     <div class="single-template">
+        @if(!empty($is_preview))
+            <div class="alert alert-warning text-center rounded-0 mb-0 border-0" role="alert">
+                {{ __('posts.preview_banner') }}
+            </div>
+        @endif
         <div class="container py-5">
             <div class="row">
                 <div class="col-md-8">

@@ -40,7 +40,7 @@ interface Post {
     content: string;
     featured_image: string;
     featured_image_url?: string;
-    status: 'draft' | 'published';
+    status: 'draft' | 'published' | 'scheduled' | 'pending_review';
     published_at: string | null;
     category: Category;
     tags: {
@@ -287,7 +287,9 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                                 <SelectContent>
                                     <SelectItem value="all">All Status</SelectItem>
                                     <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="pending_review">Pending review</SelectItem>
                                     <SelectItem value="published">Published</SelectItem>
+                                    <SelectItem value="scheduled">Scheduled</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -407,13 +409,9 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
                                                         ? 'default'
                                                         : 'secondary'
                                                 }
-                                                className={
-                                                    post.status === 'published'
-                                                        ? 'bg-green-500 hover:bg-green-600'
-                                                        : 'bg-yellow-500 hover:bg-yellow-600'
-                                                }
+                                                className={postStatusBadgeClass(post.status)}
                                             >
-                                                {post.status === 'published' ? 'Published' : 'Draft'}
+                                                {postStatusLabel(post.status)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
@@ -468,6 +466,34 @@ export default function Index({ posts, filters = { search: '', status: 'all', ca
             </div>
         </AppLayout>
     );
+}
+
+function postStatusLabel(
+    status: Post['status']
+): string {
+    switch (status) {
+        case 'published':
+            return 'Published';
+        case 'scheduled':
+            return 'Scheduled';
+        case 'pending_review':
+            return 'Pending review';
+        default:
+            return 'Draft';
+    }
+}
+
+function postStatusBadgeClass(status: Post['status']): string {
+    switch (status) {
+        case 'published':
+            return 'bg-green-500 hover:bg-green-600';
+        case 'scheduled':
+            return 'bg-blue-500 hover:bg-blue-600';
+        case 'pending_review':
+            return 'bg-orange-500 hover:bg-orange-600';
+        default:
+            return 'bg-yellow-500 hover:bg-yellow-600';
+    }
 }
 
 // Helper function to get contrasting text color based on background color

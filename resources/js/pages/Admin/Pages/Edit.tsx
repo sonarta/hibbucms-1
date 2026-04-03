@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,10 +15,15 @@ import { Editor } from '@/components/editor';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCallback } from 'react';
-import { Page } from '@/types';
+import { Eye, Link2 } from 'lucide-react';
+import { Page, type SharedData } from '@/types';
 
 interface Props {
   page: Page;
+  preview: {
+    url: string;
+    signed_url: string;
+  };
 }
 
 interface FormData extends Record<string, string | number | null> {
@@ -26,7 +31,7 @@ interface FormData extends Record<string, string | number | null> {
   content: string;
   meta_description: string;
   meta_keywords: string;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'pending_review';
   order: number;
 }
 
@@ -44,7 +49,9 @@ const breadcrumbs = [
   },
 ];
 
-export default function Edit({ page }: Props) {
+export default function Edit({ page, preview }: Props) {
+  const { translations } = usePage<SharedData>().props;
+  const tp = translations.posts;
   const { data, setData, put, processing, errors } = useForm<FormData>({
     title: page.title,
     content: page.content,
@@ -74,12 +81,36 @@ export default function Edit({ page }: Props) {
         <form onSubmit={handleSubmit}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Edit Page</h1>
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={processing}
-              >
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" disabled={processing}>
                 Save
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => window.open(preview.url, '_blank', 'noopener,noreferrer')}
+              >
+                <Eye className="h-4 w-4" />
+                {tp.preview ?? 'Preview'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="gap-1"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(preview.signed_url);
+                    toast.success(tp.preview_link_copied ?? 'Preview link copied');
+                  } catch {
+                    toast.error('Could not copy link');
+                  }
+                }}
+              >
+                <Link2 className="h-4 w-4" />
+                {tp.copy_preview_link ?? 'Copy preview link'}
               </Button>
             </div>
           </div>
@@ -128,13 +159,18 @@ export default function Edit({ page }: Props) {
                     <Label htmlFor="status">Status</Label>
                     <Select
                       value={data.status}
-                      onValueChange={(value: string) => setData('status', value as 'draft' | 'published')}
+                      onValueChange={(value: string) =>
+                        setData('status', value as 'draft' | 'published' | 'pending_review')
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="pending_review">
+                          {tp.status_pending_review ?? 'Pending review'}
+                        </SelectItem>
                         <SelectItem value="published">Published</SelectItem>
                       </SelectContent>
                     </Select>

@@ -9,7 +9,7 @@ export interface Page {
   featured_image: string | null;
   meta_description: string | null;
   meta_keywords: string | null;
-  status: 'draft' | 'published';
+  status: 'draft' | 'published' | 'pending_review';
   order: number;
   user: {
     id: number;
@@ -50,6 +50,11 @@ export interface Auth {
 
 export interface SharedData {
     name: string;
+    locale: string;
+    translations: {
+        posts: Record<string, string>;
+        common: Record<string, string>;
+    };
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };
