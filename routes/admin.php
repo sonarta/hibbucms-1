@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
         'destroy' => 'admin.menus.destroy',
     ]);
     Route::post('menus/{menu}/items', [MenuController::class, 'storeMenuItem'])->name('admin.menus.items.store');
+    Route::post('menus/{menu}/items/bulk', [MenuController::class, 'storeMenuItemsBulk'])->name('admin.menus.items.bulk-store');
     Route::put('menus/items/{menuItem}', [MenuController::class, 'updateMenuItem'])->name('admin.menus.items.update');
     Route::delete('menus/items/{menuItem}', [MenuController::class, 'destroyMenuItem'])->name('admin.menus.items.destroy');
     Route::post('menus/{menu}/reorder', [MenuController::class, 'reorderMenuItems'])->name('admin.menus.items.reorder');

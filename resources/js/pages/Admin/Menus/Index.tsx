@@ -81,40 +81,36 @@ export default function MenuBuilderPage({ menus: initialMenus, pages, posts }: P
       return
     }
 
-    // Loop through items and send requests
-    // Note: For a large number of items, a bulk API endpoint is better.
-    // But for < 10 items, sequential requests are "okay" for MVP.
-    // To avoid race conditions with order, we can chain them or use Promise.all if the backend handles concurrency well (it might not for 'order').
-    // Safer to just run them one by one or implementing a bulk endpoint later.
+    if (items.length === 0) {
+      return
+    }
 
-    let promiseChain = Promise.resolve();
+    const payload = items.map((item) => {
+      const url =
+        type === 'custom'
+          ? item.url
+          : type === 'page'
+            ? `/pages/${item.slug}`
+            : type === 'post'
+              ? `/posts/${item.slug}`
+              : '/'
+      const itemType =
+        type === 'custom'
+          ? 'custom'
+          : type === 'page'
+            ? 'page'
+            : type === 'post'
+              ? 'post'
+              : 'home'
+      return {
+        title: item.title,
+        url,
+        type: itemType,
+        target: '_self' as const,
+      }
+    })
 
-    items.forEach((item, index) => {
-      promiseChain = promiseChain.then(() => {
-        return new Promise<void>((resolve) => {
-          const url = type === 'custom' ? item.url :
-            type === 'page' ? `/pages/${item.slug}` :
-              type === 'post' ? `/posts/${item.slug}` : '/';
-
-          const title = item.title;
-
-          // Use router.post programmatically?
-          // router.post works but triggers a page reload/progress bar by default.
-          // For bulk, it's better to use axios directly IF we didn't want page reloads.
-          // But using standard Inertia router for consistency.
-          router.post(route('admin.menus.items.store', activeMenu), {
-            title,
-            url,
-            type,
-            target: '_self',
-            order: menuItems.length + index // Naive ordering
-          }, {
-            preserveScroll: true,
-            onFinish: () => resolve()
-          })
-        });
-      });
-    });
+    router.post(route('admin.menus.items.bulk-store', activeMenu), { items: payload }, { preserveScroll: true })
   }
 
   const handleUpdateMenuItem = (id: string | number, itemData: any) => {

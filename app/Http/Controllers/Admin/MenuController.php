@@ -8,32 +8,33 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class MenuController extends Controller
 {
     public function index()
     {
-        $menus = Menu::with(['items' => function($query) {
+        $menus = Menu::with(['items' => function ($query) {
             $query->whereNull('parent_id')
-                  ->orderBy('order')
-                  ->with(['children' => function($q) {
-                      $q->orderBy('order');
-                  }]);
+                ->orderBy('order')
+                ->with(['children' => function ($q) {
+                    $q->orderBy('order');
+                }]);
         }])->get();
 
         $pages = Page::select('id', 'title', 'slug')->get();
         $posts = Post::select('id', 'title', 'slug')->get();
 
         return Inertia::render('Admin/Menus/Index', [
-            'menus' => $menus->map(function($menu) {
+            'menus' => $menus->map(function ($menu) {
                 return [
                     'id' => $menu->id,
                     'name' => $menu->name,
                     'location' => $menu->location,
                     'description' => $menu->description,
                     'is_active' => $menu->is_active,
-                    'items' => $this->transformMenuItems($menu->items)
+                    'items' => $this->transformMenuItems($menu->items),
                 ];
             }),
             'pages' => $pages,
@@ -43,7 +44,7 @@ class MenuController extends Controller
 
     protected function transformMenuItems($items)
     {
-        return $items->map(function($item) {
+        return $items->map(function ($item) {
             return [
                 'id' => $item->id,
                 'title' => $item->title,
@@ -51,7 +52,7 @@ class MenuController extends Controller
                 'type' => $item->type,
                 'target' => $item->target,
                 'order' => $item->order,
-                'children' => $this->transformMenuItems($item->children)
+                'children' => $this->transformMenuItems($item->children),
             ];
         });
     }
@@ -114,6 +115,38 @@ class MenuController extends Controller
             ->with('success', 'Menu item added successfully.');
     }
 
+    /**
+     * Create many top-level menu items in one request (avoids N sequential HTTP round-trips).
+     */
+    public function storeMenuItemsBulk(Request $request, Menu $menu)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array|max:100',
+            'items.*.title' => 'required|string|max:255',
+            'items.*.url' => 'required|string|max:255',
+            'items.*.type' => 'required|string|in:custom,page,post,home',
+            'items.*.target' => 'nullable|string|in:_self,_blank',
+        ]);
+
+        $order = (int) $menu->items()->max('order');
+
+        DB::transaction(function () use ($menu, $validated, &$order) {
+            foreach ($validated['items'] as $item) {
+                $order++;
+                $menu->items()->create([
+                    'title' => $item['title'],
+                    'url' => $item['url'],
+                    'type' => $item['type'],
+                    'target' => $item['target'] ?? '_self',
+                    'order' => $order,
+                ]);
+            }
+        });
+
+        return redirect()->route('admin.menus.index')
+            ->with('success', 'Menu items added successfully.');
+    }
+
     public function updateMenuItem(Request $request, MenuItem $menuItem)
     {
         $validated = $request->validate([
@@ -160,8 +193,9 @@ class MenuController extends Controller
                 // Ambil item menu untuk pemrosesan
                 $menuItem = MenuItem::find($item['id']);
 
-                if (!$menuItem) {
+                if (! $menuItem) {
                     \Log::error('Menu item not found:', ['id' => $item['id']]);
+
                     continue;
                 }
 
@@ -169,7 +203,7 @@ class MenuController extends Controller
                 \Log::info('Original state:', [
                     'id' => $menuItem->id,
                     'parent_id' => $menuItem->parent_id,
-                    'order' => $menuItem->order
+                    'order' => $menuItem->order,
                 ]);
 
                 // Pastikan parent_id adalah null atau ada di database
@@ -187,10 +221,10 @@ class MenuController extends Controller
                         ->where('menu_id', $menu->id)
                         ->exists();
 
-                    if (!$parentExists) {
+                    if (! $parentExists) {
                         \Log::warning('Parent does not exist, setting parent_id to null:', [
                             'item_id' => $item['id'],
-                            'parent_id' => $parentId
+                            'parent_id' => $parentId,
                         ]);
                         $parentId = null;
                     }
@@ -204,14 +238,14 @@ class MenuController extends Controller
                 \Log::info('Updated item:', [
                     'id' => $menuItem->id,
                     'new_parent_id' => $menuItem->parent_id,
-                    'new_order' => $menuItem->order
+                    'new_order' => $menuItem->order,
                 ]);
 
             } catch (\Exception $e) {
                 \Log::error('Error updating menu item:', [
                     'item' => $item,
                     'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
         }

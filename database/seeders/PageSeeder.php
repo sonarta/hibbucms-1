@@ -13,7 +13,7 @@ class PageSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::role('admin')->first();
+        $admin = User::role('Admin')->first();
 
         // About Us Page
         Page::create([

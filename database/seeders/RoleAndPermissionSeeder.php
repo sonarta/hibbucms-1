@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleAndPermissionSeeder extends Seeder
 {
@@ -38,9 +37,10 @@ class RoleAndPermissionSeeder extends Seeder
             ['name' => 'edit categories', 'group' => 'Category Management'],
             ['name' => 'delete categories', 'group' => 'Category Management'],
 
-            // Media management
+            // Media management (aligned with Admin\MediaController middleware)
             ['name' => 'view media', 'group' => 'Media Management'],
-            ['name' => 'upload media', 'group' => 'Media Management'],
+            ['name' => 'create media', 'group' => 'Media Management'],
+            ['name' => 'edit media', 'group' => 'Media Management'],
             ['name' => 'delete media', 'group' => 'Media Management'],
 
             // Settings
@@ -60,22 +60,22 @@ class RoleAndPermissionSeeder extends Seeder
             'view users', 'create users', 'edit users',
             'view content', 'create content', 'edit content', 'delete content', 'publish content',
             'view categories', 'create categories', 'edit categories', 'delete categories',
-            'view media', 'upload media', 'delete media',
-            'manage settings'
+            'view media', 'create media', 'edit media', 'delete media',
+            'manage settings',
         ]);
 
         $role = Role::create(['name' => 'Editor']);
         $role->givePermissionTo([
             'view content', 'create content', 'edit content', 'publish content',
             'view categories',
-            'view media', 'upload media'
+            'view media', 'create media', 'edit media',
         ]);
 
         $role = Role::create(['name' => 'Author']);
         $role->givePermissionTo([
             'view content', 'create content', 'edit content',
             'view categories',
-            'view media', 'upload media'
+            'view media', 'create media', 'edit media',
         ]);
     }
 }

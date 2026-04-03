@@ -87,6 +87,20 @@ php artisan serve
 
 [Panduan instalasi lengkap](https://cms.hibbuproject.com/docs/installation)
 
+## Production: task scheduler (scheduled posts)
+
+HibbuCMS mendaftarkan perintah `posts:publish-scheduled` di [`routes/console.php`](routes/console.php) agar post berstatus **scheduled** otomatis menjadi **published** pada waktu `published_at`. Laravel hanya menjalankan jadwal ini jika **cron** di server memanggil scheduler.
+
+**Wajib di production:** tambahkan entri cron (sesuaikan path project dan user):
+
+```bash
+* * * * * cd /path/to/hibbucms-1 && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Tanpa baris di atas, post terjadwal tidak akan pernah terbit sampai Anda menjalankan `php artisan posts:publish-scheduled` secara manual. Lihat juga [Laravel — task scheduling](https://laravel.com/docs/scheduling).
+
+**Lokal:** saat development, jalankan `php artisan schedule:work` di terminal terpisah (atau cron di WSL) agar jadwal diuji tanpa deploy.
+
 ## 🤝 Contribute
 
 We greatly appreciate contributions from the community! HibbuCMS is an open-source project, and we welcome contributions in various forms:

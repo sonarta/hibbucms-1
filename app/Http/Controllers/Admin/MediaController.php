@@ -6,19 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\MediaFolder;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class MediaController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view media')->only(['index', 'show']);
-        $this->middleware('permission:create media')->only(['create', 'store']);
-        $this->middleware('permission:edit media')->only(['edit', 'update']);
-        $this->middleware('permission:delete media')->only('destroy');
+        $this->middleware('permission:view media')->only(['index', 'show', 'download']);
+        $this->middleware('permission:create media')->only(['store', 'storeFolder']);
+        $this->middleware('permission:edit media')->only(['move']);
+        $this->middleware('permission:delete media')->only(['destroy', 'destroyFolder', 'bulkDestroy']);
     }
 
     public function index(Request $request)
@@ -46,12 +45,12 @@ class MediaController extends Controller
 
         // Filter by type
         if ($request->has('type')) {
-            $query->where('mime_type', 'like', $request->type . '/%');
+            $query->where('mime_type', 'like', $request->type.'/%');
         }
 
         // Filter by search term
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $media = $query->paginate(24)->through(function ($item) {
@@ -93,7 +92,8 @@ class MediaController extends Controller
         ]);
     }
 
-    public function storeFolder(Request $request) {
+    public function storeFolder(Request $request)
+    {
         $request->validate([
             'name' => 'required|string|max:255',
             'parent_id' => 'nullable|exists:media_folders,id',
@@ -178,10 +178,10 @@ class MediaController extends Controller
             'human_readable_size' => $media->human_readable_size,
             'user_id' => $media->user_id,
             'user' => $media->user,
-            'created_at' => $media->created_at
+            'created_at' => $media->created_at,
         ]);
 
-        if (!$media->user) {
+        if (! $media->user) {
             $media->update(['user_id' => auth()->id() ?? 1]);
             $media->load('user');
         }
@@ -211,7 +211,8 @@ class MediaController extends Controller
             ->with('message', 'Media deleted successfully.');
     }
 
-    public function destroyFolder($id) {
+    public function destroyFolder($id)
+    {
         $folder = MediaFolder::findOrFail($id);
         // Logic for deleting folder (recursive or move to parent)?
         // Current constraint is nullOnDelete, so children will move to root.
@@ -256,18 +257,18 @@ class MediaController extends Controller
         ]);
 
         if ($request->has('ids')) {
-             Media::whereIn('id', $request->ids)->update(['folder_id' => $request->target_folder_id]);
+            Media::whereIn('id', $request->ids)->update(['folder_id' => $request->target_folder_id]);
         }
 
         if ($request->has('folder_ids')) {
-             // Prevent moving folder into itself or its children (simple check)
-             // For strict check we need to check hierarchy.
-             // For now, just update parent_id if it's not the same.
-             foreach($request->folder_ids as $fid) {
-                 if ($fid != $request->target_folder_id) {
-                     MediaFolder::where('id', $fid)->update(['parent_id' => $request->target_folder_id]);
-                 }
-             }
+            // Prevent moving folder into itself or its children (simple check)
+            // For strict check we need to check hierarchy.
+            // For now, just update parent_id if it's not the same.
+            foreach ($request->folder_ids as $fid) {
+                if ($fid != $request->target_folder_id) {
+                    MediaFolder::where('id', $fid)->update(['parent_id' => $request->target_folder_id]);
+                }
+            }
         }
 
         return back()->with('success', 'Items moved successfully.');
@@ -276,6 +277,7 @@ class MediaController extends Controller
     public function download($id)
     {
         $media = Media::findOrFail($id);
+
         return Storage::disk($media->disk)->download(
             $media->path,
             $media->name

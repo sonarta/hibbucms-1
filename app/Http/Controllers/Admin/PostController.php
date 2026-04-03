@@ -3,25 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Post\AutoSavePostRequest;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
-use App\Http\Requests\Post\AutoSavePostRequest;
+use App\Models\Category;
+use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostRevision;
-use App\Models\Category;
 use App\Models\Tag;
-use App\Models\Media;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class PostController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view content')->only(['index', 'show']);
+        $this->middleware('permission:view content')->only(['index', 'show', 'revisions']);
         $this->middleware('permission:create content')->only(['create', 'store']);
-        $this->middleware('permission:edit content')->only(['edit', 'update']);
+        $this->middleware('permission:create content|edit content')->only(['autoSave']);
+        $this->middleware('permission:edit content')->only(['edit', 'update', 'restoreRevision']);
         $this->middleware('permission:delete content')->only('destroy');
         $this->middleware('permission:publish content')->only(['publish', 'unpublish']);
     }
@@ -35,9 +36,9 @@ class PostController extends Controller
 
         // Filter by search term
         if ($request->has('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%')
-                ->orWhere('excerpt', 'like', '%' . $request->search . '%')
-                ->orWhere('content', 'like', '%' . $request->search . '%');
+            $query->where('title', 'like', '%'.$request->search.'%')
+                ->orWhere('excerpt', 'like', '%'.$request->search.'%')
+                ->orWhere('content', 'like', '%'.$request->search.'%');
         }
 
         // Filter by status
@@ -55,6 +56,7 @@ class PostController extends Controller
         // Transform posts data to include featured image URL
         $posts->through(function ($post) {
             $post->featured_image = $post->featuredImage?->url;
+
             return $post;
         });
 
@@ -63,8 +65,8 @@ class PostController extends Controller
             'filters' => [
                 'search' => $request->input('search', ''),
                 'status' => $request->input('status', 'all'),
-                'category' => $request->input('category', 'all')
-            ]
+                'category' => $request->input('category', 'all'),
+            ],
         ]);
     }
 
@@ -80,7 +82,7 @@ class PostController extends Controller
         return Inertia::render('Admin/Posts/Create', [
             'categories' => $categories,
             'tags' => $tags,
-            'media' => $media
+            'media' => $media,
         ]);
     }
 
@@ -99,7 +101,7 @@ class PostController extends Controller
                 $media = Media::upload($request->file('featured_image'));
                 $validated['featured_image_id'] = $media->id;
             } catch (\Exception $e) {
-                return back()->withErrors(['featured_image' => 'Gagal mengupload gambar: ' . $e->getMessage()]);
+                return back()->withErrors(['featured_image' => 'Gagal mengupload gambar: '.$e->getMessage()]);
             }
         } elseif ($request->filled('featured_image_id')) {
             $validated['featured_image_id'] = $request->input('featured_image_id');
@@ -123,7 +125,7 @@ class PostController extends Controller
         $post->load(['user', 'category', 'tags']);
 
         return Inertia::render('Admin/Posts/Show', [
-            'post' => $post
+            'post' => $post,
         ]);
     }
 
@@ -141,7 +143,7 @@ class PostController extends Controller
             'post' => $post,
             'categories' => $categories,
             'tags' => $tags,
-            'media' => $media
+            'media' => $media,
         ]);
     }
 
@@ -162,7 +164,7 @@ class PostController extends Controller
                 $media = Media::upload($request->file('featured_image'));
                 $validated['featured_image_id'] = $media->id;
             } catch (\Exception $e) {
-                return back()->withErrors(['featured_image' => 'Gagal mengupload gambar: ' . $e->getMessage()]);
+                return back()->withErrors(['featured_image' => 'Gagal mengupload gambar: '.$e->getMessage()]);
             }
         } elseif ($request->filled('featured_image_id')) {
             $validated['featured_image_id'] = $request->input('featured_image_id');
@@ -200,7 +202,7 @@ class PostController extends Controller
     {
         $post->update([
             'status' => 'published',
-            'published_at' => now()
+            'published_at' => now(),
         ]);
 
         return back()->with('message', 'Post published successfully.');
@@ -210,7 +212,7 @@ class PostController extends Controller
     {
         $post->update([
             'status' => 'draft',
-            'published_at' => null
+            'published_at' => null,
         ]);
 
         return back()->with('message', 'Post unpublished successfully.');
@@ -227,9 +229,9 @@ class PostController extends Controller
         try {
             if ($post) {
                 // Update existing post - only update fields that are provided
-                $updateData = array_filter($validated, fn($value) => $value !== null);
+                $updateData = array_filter($validated, fn ($value) => $value !== null);
 
-                if (!empty($updateData)) {
+                if (! empty($updateData)) {
                     $post->update($updateData);
                 }
 
@@ -240,7 +242,7 @@ class PostController extends Controller
                 // Create new draft post
                 $validated['user_id'] = auth()->id();
                 $validated['status'] = 'draft';
-                $validated['slug'] = Str::slug($validated['title'] ?? 'untitled-' . time());
+                $validated['slug'] = Str::slug($validated['title'] ?? 'untitled-'.time());
 
                 // Set default title if not provided
                 if (empty($validated['title'])) {
@@ -255,7 +257,7 @@ class PostController extends Controller
                 // Set default category if not provided - required field
                 if (empty($validated['category_id'])) {
                     $defaultCategory = Category::first();
-                    if (!$defaultCategory) {
+                    if (! $defaultCategory) {
                         return response()->json([
                             'success' => false,
                             'message' => 'No categories available. Please create a category first.',
@@ -278,14 +280,14 @@ class PostController extends Controller
                 'message' => 'Draft saved successfully.',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Auto-save failed: ' . $e->getMessage(), [
+            \Log::error('Auto-save failed: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
                 'validated' => $validated,
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save draft: ' . $e->getMessage(),
+                'message' => 'Failed to save draft: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -341,8 +343,9 @@ class PostController extends Controller
         ]);
 
         return redirect()->route('admin.posts.edit', $post)
-            ->with('message', 'Post restored to revision #' . $revision->revision_number);
+            ->with('message', 'Post restored to revision #'.$revision->revision_number);
     }
+
     /**
      * Handle bulk actions for posts.
      */
@@ -354,8 +357,16 @@ class PostController extends Controller
             'action' => 'required|in:delete,publish,draft',
         ]);
 
-        $ids = $request->input('ids');
         $action = $request->input('action');
+        $user = $request->user();
+
+        match ($action) {
+            'delete' => abort_unless($user->can('delete content'), 403),
+            'publish' => abort_unless($user->can('publish content'), 403),
+            'draft' => abort_unless($user->can('edit content'), 403),
+        };
+
+        $ids = $request->input('ids');
         $count = count($ids);
 
         switch ($action) {
