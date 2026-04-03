@@ -26,7 +26,7 @@ export interface NavSubItem {
 
 export interface NavItem {
     title: string;
-    href: string;
+    href?: string;
     icon?: LucideIcon;
     items?: NavSubItem[];
 }
@@ -44,7 +44,8 @@ export interface User {
 }
 
 export interface Auth {
-    user: User;
+    user: User | null;
+    permissions: string[];
 }
 
 export interface SharedData {

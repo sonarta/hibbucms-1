@@ -99,12 +99,6 @@ Description: Custom template for single post page
                         </div>
                     @endif
 
-                    @if(isset($comments_enabled) && $comments_enabled)
-                        <div class="comments-section mt-5">
-                            <h3>Comments</h3>
-                            <!-- Sistem komentar akan ditambahkan di sini -->
-                        </div>
-                    @endif
                 </div>
 
                 <div class="col-md-4">

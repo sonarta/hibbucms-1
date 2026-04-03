@@ -45,10 +45,20 @@ class RoleAndPermissionSeeder extends Seeder
 
             // Settings
             ['name' => 'manage settings', 'group' => 'Settings'],
+
+            // Administration (dashboard, menus, themes, plugins, roles)
+            ['name' => 'view dashboard', 'group' => 'Administration'],
+            ['name' => 'manage menus', 'group' => 'Administration'],
+            ['name' => 'manage themes', 'group' => 'Administration'],
+            ['name' => 'manage plugins', 'group' => 'Administration'],
+            ['name' => 'manage roles', 'group' => 'Administration'],
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create($permission);
+            Permission::firstOrCreate(
+                ['name' => $permission['name'], 'guard_name' => 'web'],
+                ['group' => $permission['group'] ?? null]
+            );
         }
 
         // Create roles and assign permissions
@@ -62,6 +72,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view categories', 'create categories', 'edit categories', 'delete categories',
             'view media', 'create media', 'edit media', 'delete media',
             'manage settings',
+            'view dashboard', 'manage menus', 'manage themes', 'manage plugins', 'manage roles',
         ]);
 
         $role = Role::create(['name' => 'Editor']);
@@ -69,6 +80,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view content', 'create content', 'edit content', 'publish content',
             'view categories',
             'view media', 'create media', 'edit media',
+            'view dashboard', 'manage menus',
         ]);
 
         $role = Role::create(['name' => 'Author']);
@@ -76,6 +88,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view content', 'create content', 'edit content',
             'view categories',
             'view media', 'create media', 'edit media',
+            'view dashboard',
         ]);
     }
 }

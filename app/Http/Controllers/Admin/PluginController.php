@@ -11,18 +11,23 @@ use ZipArchive;
 
 class PluginController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage plugins');
+    }
+
     public function index()
     {
         $plugins = Plugin::all();
 
         return Inertia::render('Admin/Plugins/Index', [
-            'plugins' => $plugins
+            'plugins' => $plugins,
         ]);
     }
 
     public function activate(Plugin $plugin)
     {
-        if (!$plugin->hasValidStructure()) {
+        if (! $plugin->hasValidStructure()) {
             return redirect()->back()->with('error', 'Plugin structure is invalid. Missing index.php file.');
         }
 
@@ -42,8 +47,9 @@ class PluginController extends Controller
     {
         $pluginsPath = base_path('plugins');
 
-        if (!File::exists($pluginsPath)) {
+        if (! File::exists($pluginsPath)) {
             File::makeDirectory($pluginsPath, 0755, true);
+
             return redirect()->back()->with('info', 'Plugins directory created. No plugins found.');
         }
 
@@ -52,12 +58,12 @@ class PluginController extends Controller
 
         foreach ($directories as $directory) {
             $folderName = basename($directory);
-            $configPath = $directory . '/plugin.json';
+            $configPath = $directory.'/plugin.json';
 
             if (File::exists($configPath)) {
                 $config = json_decode(File::get($configPath), true);
 
-                if (!$config || !isset($config['name']) || !isset($config['slug']) || !isset($config['version'])) {
+                if (! $config || ! isset($config['name']) || ! isset($config['slug']) || ! isset($config['version'])) {
                     continue;
                 }
 
@@ -112,12 +118,12 @@ class PluginController extends Controller
         $pluginsPath = base_path('plugins');
 
         // Create temporary file for extraction
-        $tempPath = storage_path('app/temp/' . uniqid());
+        $tempPath = storage_path('app/temp/'.uniqid());
         File::makeDirectory($tempPath, 0755, true);
 
         try {
             // Extract zip to temporary folder
-            if ($zip->open($file->path()) === TRUE) {
+            if ($zip->open($file->path()) === true) {
                 $zip->extractTo($tempPath);
                 $zip->close();
 
@@ -126,33 +132,33 @@ class PluginController extends Controller
                 $pluginFolder = null;
 
                 // Check in root folder
-                if (File::exists($tempPath . '/plugin.json')) {
-                    $pluginJson = $tempPath . '/plugin.json';
+                if (File::exists($tempPath.'/plugin.json')) {
+                    $pluginJson = $tempPath.'/plugin.json';
                     $pluginFolder = $tempPath;
                 } else {
                     // Check in first subfolder
                     $directories = File::directories($tempPath);
                     if (count($directories) > 0) {
                         $firstDir = $directories[0];
-                        if (File::exists($firstDir . '/plugin.json')) {
-                            $pluginJson = $firstDir . '/plugin.json';
+                        if (File::exists($firstDir.'/plugin.json')) {
+                            $pluginJson = $firstDir.'/plugin.json';
                             $pluginFolder = $firstDir;
                         }
                     }
                 }
 
-                if (!$pluginJson) {
+                if (! $pluginJson) {
                     throw new \Exception('Invalid plugin structure: plugin.json not found');
                 }
 
                 // Read and validate plugin.json
                 $config = json_decode(File::get($pluginJson), true);
-                if (!isset($config['name']) || !isset($config['slug']) || !isset($config['version'])) {
+                if (! isset($config['name']) || ! isset($config['slug']) || ! isset($config['version'])) {
                     throw new \Exception('Invalid plugin.json structure');
                 }
 
                 // Move to plugins folder
-                $targetPath = $pluginsPath . '/' . $config['slug'];
+                $targetPath = $pluginsPath.'/'.$config['slug'];
                 if (File::exists($targetPath)) {
                     File::deleteDirectory($targetPath);
                 }
@@ -178,7 +184,7 @@ class PluginController extends Controller
 
             throw new \Exception('Failed to open zip file');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to upload plugin: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to upload plugin: '.$e->getMessage());
         } finally {
             // Clean up temporary files
             if (File::exists($tempPath)) {

@@ -87,15 +87,6 @@ class SettingsSeeder extends Seeder
                 'description' => 'Panjang Excerpt (karakter)',
                 'is_public' => true,
             ],
-            [
-                'group' => 'content',
-                'key' => 'comments_enabled',
-                'value' => true,
-                'type' => 'boolean',
-                'description' => 'Aktifkan Komentar',
-                'is_public' => true,
-            ],
-
             // Pengaturan Media Sosial
             [
                 'group' => 'social',

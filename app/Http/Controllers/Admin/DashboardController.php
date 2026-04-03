@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Post;
 use App\Models\Category;
-use App\Models\Tag;
 use App\Models\Media;
-use Inertia\Inertia;
+use App\Models\Post;
+use App\Models\Tag;
 use Carbon\Carbon;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view dashboard')->only('index');
+    }
+
     public function index()
     {
         // Get current month stats
@@ -57,8 +62,11 @@ class DashboardController extends Controller
         ];
 
         // Calculate trends (percentage change from last month)
-        $calculateTrend = function($current, $last) {
-            if ($last === 0) return $current > 0 ? 100 : 0;
+        $calculateTrend = function ($current, $last) {
+            if ($last === 0) {
+                return $current > 0 ? 100 : 0;
+            }
+
             return round((($current - $last) / $last) * 100);
         };
 
@@ -87,7 +95,7 @@ class DashboardController extends Controller
                 ->latest()
                 ->take(5)
                 ->get()
-                ->map(fn($post) => [
+                ->map(fn ($post) => [
                     'id' => $post->id,
                     'title' => $post->title,
                     'status' => $post->status,
@@ -99,7 +107,7 @@ class DashboardController extends Controller
             'recentMedia' => Media::latest()
                 ->take(8)
                 ->get()
-                ->map(fn($media) => [
+                ->map(fn ($media) => [
                     'id' => $media->id,
                     'name' => $media->name,
                     'url' => $media->url,

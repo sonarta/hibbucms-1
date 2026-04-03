@@ -3,10 +3,14 @@
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\SitemapController;
 
 // Frontend Routes
 Route::get('/', [FrontendController::class, 'home'])->name('home');
+Route::get('/feed.xml', [FeedController::class, 'rss'])->name('feed.rss');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/blog', [FrontendController::class, 'blog'])->name('blog');
 Route::get('/blog/{slug}', [FrontendController::class, 'post'])->name('blog.post');
 

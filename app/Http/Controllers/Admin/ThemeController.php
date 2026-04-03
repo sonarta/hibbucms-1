@@ -11,6 +11,11 @@ use ZipArchive;
 
 class ThemeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage themes');
+    }
+
     public function index()
     {
         $themes = Theme::all()->map(function ($theme) {
@@ -18,11 +23,12 @@ class ThemeController extends Controller
             if ($theme->preview) {
                 $theme->preview_url = asset("themes/{$theme->folder_name}/{$theme->preview}");
             }
+
             return $theme;
         });
 
         return Inertia::render('Admin/Themes/Index', [
-            'themes' => $themes
+            'themes' => $themes,
         ]);
     }
 
@@ -40,7 +46,7 @@ class ThemeController extends Controller
 
         foreach ($directories as $directory) {
             $folderName = basename($directory);
-            $configPath = $directory . '/theme.json';
+            $configPath = $directory.'/theme.json';
 
             if (File::exists($configPath)) {
                 $config = json_decode(File::get($configPath), true);
@@ -93,12 +99,12 @@ class ThemeController extends Controller
         $themesPath = base_path('themes');
 
         // Buat temporary file untuk extract
-        $tempPath = storage_path('app/temp/' . uniqid());
+        $tempPath = storage_path('app/temp/'.uniqid());
         File::makeDirectory($tempPath, 0755, true);
 
         try {
             // Extract zip ke temporary folder
-            if ($zip->open($file->path()) === TRUE) {
+            if ($zip->open($file->path()) === true) {
                 $zip->extractTo($tempPath);
                 $zip->close();
 
@@ -107,33 +113,33 @@ class ThemeController extends Controller
                 $themeFolder = null;
 
                 // Cek di root folder
-                if (File::exists($tempPath . '/theme.json')) {
-                    $themeJson = $tempPath . '/theme.json';
+                if (File::exists($tempPath.'/theme.json')) {
+                    $themeJson = $tempPath.'/theme.json';
                     $themeFolder = $tempPath;
                 } else {
                     // Cek di subfolder pertama
                     $directories = File::directories($tempPath);
                     if (count($directories) > 0) {
                         $firstDir = $directories[0];
-                        if (File::exists($firstDir . '/theme.json')) {
-                            $themeJson = $firstDir . '/theme.json';
+                        if (File::exists($firstDir.'/theme.json')) {
+                            $themeJson = $firstDir.'/theme.json';
                             $themeFolder = $firstDir;
                         }
                     }
                 }
 
-                if (!$themeJson) {
+                if (! $themeJson) {
                     throw new \Exception('Invalid theme structure: theme.json not found');
                 }
 
                 // Baca dan validasi theme.json
                 $config = json_decode(File::get($themeJson), true);
-                if (!isset($config['name']) || !isset($config['slug']) || !isset($config['version'])) {
+                if (! isset($config['name']) || ! isset($config['slug']) || ! isset($config['version'])) {
                     throw new \Exception('Invalid theme.json structure');
                 }
 
                 // Pindahkan ke folder themes
-                $targetPath = $themesPath . '/' . $config['slug'];
+                $targetPath = $themesPath.'/'.$config['slug'];
                 if (File::exists($targetPath)) {
                     File::deleteDirectory($targetPath);
                 }
@@ -158,7 +164,7 @@ class ThemeController extends Controller
 
             throw new \Exception('Failed to open zip file');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to upload theme: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to upload theme: '.$e->getMessage());
         } finally {
             // Bersihkan temporary files
             if (File::exists($tempPath)) {

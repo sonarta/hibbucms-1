@@ -13,6 +13,11 @@ use Inertia\Inertia;
 
 class MenuController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage menus');
+    }
+
     public function index()
     {
         $menus = Menu::with(['items' => function ($query) {

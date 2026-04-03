@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use App\Http\Controllers\Controller;
 
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:manage roles');
+    }
+
     public function index()
     {
         $roles = Role::with('permissions')
@@ -66,7 +71,7 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
             'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
