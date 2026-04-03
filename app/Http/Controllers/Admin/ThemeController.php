@@ -34,7 +34,11 @@ class ThemeController extends Controller
 
     public function activate(Theme $theme)
     {
+        do_action('theme.before_activate', $theme);
+
         $theme->activate();
+
+        do_action('theme.after_activate', $theme->fresh());
 
         return redirect()->back()->with('success', 'Theme activated successfully');
     }
@@ -76,6 +80,15 @@ class ThemeController extends Controller
             return redirect()->back()->with('error', 'Cannot delete active theme');
         }
 
+        do_action('theme.before_delete', $theme);
+
+        $snapshot = [
+            'id' => $theme->id,
+            'name' => $theme->name,
+            'slug' => $theme->slug,
+            'folder_name' => $theme->folder_name,
+        ];
+
         // Hapus folder tema jika ada
         $themePath = base_path("themes/{$theme->folder_name}");
         if (File::exists($themePath)) {
@@ -84,6 +97,8 @@ class ThemeController extends Controller
 
         // Hapus dari database
         $theme->delete();
+
+        do_action('theme.after_delete', $snapshot);
 
         return redirect()->back()->with('success', 'Theme deleted successfully');
     }

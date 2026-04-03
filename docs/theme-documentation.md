@@ -279,10 +279,10 @@ HibbuCMS provides various hooks that allow you to customize theme behavior:
 - `theme.parent_view_path_base` - Filter to modify parent theme view path
 - `theme.assets_path_base` - Filter to modify theme assets path
 - `theme.public_assets_path` - Filter to modify theme public assets path
-- `theme.before_activate` - Triggered before theme activation
+- `theme.before_activate` - Triggered before theme activation (admin: `ThemeController::activate`)
 - `theme.after_activate` - Triggered after theme activation
-- `theme.before_delete` - Triggered before theme deletion
-- `theme.after_delete` - Triggered after theme deletion
+- `theme.before_delete` - Triggered before theme deletion (only if theme is not active; admin: `ThemeController::destroy`)
+- `theme.after_delete` - Triggered after DB delete; receives an array snapshot (`id`, `name`, `slug`, `folder_name`)
 - `theme.styles` - Action to output theme styles
 - `theme.scripts` - Action to output theme scripts
 
